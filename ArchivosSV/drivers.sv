@@ -1,0 +1,190 @@
+// ---- PACK1: parametrizada por ancho de datos del stream MD ----
+class pack1 #(parameter int ALGN_DATA_WIDTH = 32);
+  // Derivados locales para offset/size
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
+
+  // MD (entrada al DUT)
+  rand logic [ALGN_DATA_WIDTH-1:0]   md_data;
+  rand logic [ALGN_OFFSET_WIDTH-1:0] md_offset;
+  rand logic [ALGN_SIZE_WIDTH-1:0]   md_size;
+  rand int unsigned                  trans_cycles;
+  // APB (acceso a registros)
+  rand logic [15:0]                  APBaddr;
+  rand logic [31:0]                  APBdata;
+  rand bit                           Esc_Lec_APB;    // 1=Escritura, 0=Lectura
+  rand int unsigned                  conf_cycles;
+
+  function new();
+    md_data='0; md_offset='0; md_size='0; trans_cycles=0;
+    APBaddr='0; APBdata='0; Esc_Lec_APB=0; conf_cycles=0;
+  endfunction
+
+  function void print(string tag="");
+    $display("[%0t] %s pack1  md_data=0x%0h md_offset=%0d md_size=%0d trans=%0d | apb: addr=0x%0h data=0x%0h op=%s conf=%0d",
+             $time, tag, md_data, md_offset, md_size, trans_cycles, APBaddr, APBdata,
+             (Esc_Lec_APB ? "WRITE" : "READ"), conf_cycles);
+  endfunction
+
+
+endclass
+
+
+interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
+    localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+    localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
+
+    logic                         md_rx_valid;
+    logic [ALGN_DATA_WIDTH-1:0]   md_rx_data;
+    logic [ALGN_OFFSET_WIDTH-1:0] md_rx_offset;
+    logic [ALGN_SIZE_WIDTH-1:0]   md_rx_size;
+    logic                         md_rx_ready; 
+    logic                         md_rx_err; 
+    logic                         md_tx_valid;
+    logic [ALGN_DATA_WIDTH-1:0]   md_tx_data;
+    logic [ALGN_OFFSET_WIDTH-1:0] md_tx_offset;
+    logic [ALGN_SIZE_WIDTH-1:0]   md_tx_size;
+    logic                         md_tx_ready;
+    logic                         md_tx_err;
+  endinterface
+
+  interface APB_if (input logic clk);
+    logic [15:0]                  paddr;
+    logic                         psel;
+    logic                         penable;
+    logic                         pwrite;
+    logic [31:0]                  pwdata;
+    logic [31:0]                  prdata;   
+    logic                         pready;   
+    logic                         pslverr; 
+    logic                         irq;  
+  endinterface
+
+  // ==============================================================
+  // MD DRIVER  (lee pack1 desde gdMD_mailbox)
+  //  - Aplica protocolo: {data,offset,size} + md_rx_valid estables
+  //    hasta que md_rx_ready = 1; un ciclo después baja todo a 0.
+  //  - Respeta "trans_cycles" antes de la siguiente transacción.
+  // ==============================================================
+  class md_driver #(parameter int ALGN_DATA_WIDTH = 32);
+    virtual MD_if #(ALGN_DATA_WIDTH) vif;
+    mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox;
+  
+    function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
+                 mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox);
+      this.vif = vif;
+      this.gdMD_mailbox = gdMD_mailbox;
+    endfunction
+
+    // Pone la interfaz en reposo
+    task automatic idle_lines();
+      vif.md_rx_valid  = 1'b0;
+      vif.md_rx_data   = '0;
+      vif.md_rx_offset = '0;
+      vif.md_rx_size   = '0;
+      @(posedge vif.clk);
+    endtask
+
+    // Arranca el bucle de conducción
+    task run();
+      pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) item;
+      idle_lines();
+      forever begin
+        gdMD_mailbox.get(item);           // bloquea hasta tener un item
+
+        // SETUP del beat
+        vif.md_rx_data   = item.md_data;
+        vif.md_rx_offset = item.md_offset;
+        vif.md_rx_size   = item.md_size;
+        vif.md_rx_valid  = 1'b1;
+        $display("[%0t] MD_DRV SETUP  data=0x%0h off=%0d size=%0d", $time, item.md_data, item.md_offset, item.md_size);
+
+        wait (vif.md_rx_ready === 1'b1);    // se libera en el MISMO ciclo si ready 
+        $display("[%0t] MD_DRV  ready=1", $time);
+        // Un ciclo después de ready=1, soltar líneas a 0
+        @(posedge vif.clk);
+        vif.md_rx_valid  = 1'b0;
+        vif.md_rx_data   = '0;
+        vif.md_rx_offset = '0;
+        vif.md_rx_size   = '0;
+        $display("[%0t] MD_DRV DONE  gap=%0d", $time, item.trans_cycles);
+        // tiempo de espera siguiente transacción
+        repeat (item.trans_cycles) @(posedge vif.clk);
+      end
+    endtask
+  endclass
+
+  // ==============================================================
+  // APB DRIVER  (lee pack1 desde gdAPB_mailbox)
+  //  - Ciclo SETUP:   psel=1, paddr, pwrite (Según regla), pwdata
+  //  - Ciclo ACCESS:  penable=1 hasta pready=1
+  //  - Un ciclo después: bajar todo y esperar "conf_cycles"
+  //  - Regla: pwrite=1 SOLO si (Esc_Lec_APB==1); en caso contrario 0.
+  // ==============================================================
+  class apb_driver #(parameter int ALGN_DATA_WIDTH = 32);
+    virtual APB_if vif;
+    mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdAPB_mailbox;
+  
+    function new(virtual APB_if vif,
+                 mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdAPB_mailbox);
+      this.vif = vif;
+      this.gdAPB_mailbox = gdAPB_mailbox;
+    endfunction
+
+    task automatic idle_bus();
+      vif.psel    = 1'b0;
+      vif.penable = 1'b0;
+      vif.pwrite  = 1'b0;
+      vif.paddr   = '0;
+      vif.pwdata  = '0;
+      @(posedge vif.clk);
+    endtask
+
+    // Secuencia básica APB 
+    task run();
+     pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) item;
+      idle_bus();
+      forever begin
+        gdAPB_mailbox.get(item);
+
+        // ---- SETUP: poner señales y PSEL=1 (PENABLE=0) ------------
+        vif.paddr   = item.APBaddr;
+        // pwrite solo se activa si ESCRITURA
+        vif.pwrite  = (item.Esc_Lec_APB);
+        // Solo tiene sentido pwdata cuando es escritura
+        vif.pwdata  = ( item.Esc_Lec_APB )
+               ? item.APBdata : '0;
+        vif.psel    = 1'b1;
+        vif.penable = 1'b0;
+        $display("[%0t] APB_DRV SETUP  %s addr=0x%0h data=0x%0h",
+         $time, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
+        @(posedge vif.clk);
+
+        // ---- ACCESS: levantar PENABLE y esperar PREADY ----
+        vif.penable = 1'b1;
+        // Si PREADY se pone en 1 en este mismo ciclo (0 wait), este wait termina de inmediato.
+        // Si no, esperará hasta el ciclo en que PREADY suba.
+        wait (vif.pready === 1'b1);
+        // Si es lectura, tomar datos ahora (ciclo de PREADY)
+        if (!item.Esc_Lec_APB) begin
+          $display("[%0t] APB_DRV READ  addr=0x%0h data=0x%0h err=%0b",
+                   $time, item.APBaddr, vif.prdata, vif.pslverr);
+        end else begin
+          // LOG write complete
+          $display("[%0t] APB_DRV WRITE DONE  addr=0x%0h data=0x%0h err=%0b",
+                   $time, item.APBaddr, item.APBdata, vif.pslverr);
+        end
+        // Flanco inmediatamente POSTERIOR al flanco que tuvo PREADY=1 -> bajar
+        @(posedge vif.clk);
+        vif.psel    = 1'b0;
+        vif.penable = 1'b0;
+        vif.pwrite  = 1'b0;
+        vif.paddr   = '0;
+        vif.pwdata  = '0;
+        $display("[%0t] APB_DRV IDLE  gap=%0d", $time, item.conf_cycles);
+        // ---- transacciones entre configuraciones ----------------------------
+        repeat (item.conf_cycles) @(posedge vif.clk);
+      end
+    endtask
+  endclass
+
