@@ -1,35 +1,3 @@
-// ---- PACK1: parametrizada por ancho de datos del stream MD ----
-class pack1 #(parameter int ALGN_DATA_WIDTH = 32);
-  // Derivados locales para offset/size
-  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
-  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
-
-  // MD (entrada al DUT)
-  rand logic [ALGN_DATA_WIDTH-1:0]   md_data;
-  rand logic [ALGN_OFFSET_WIDTH-1:0] md_offset;
-  rand logic [ALGN_SIZE_WIDTH-1:0]   md_size;
-  rand int unsigned                  trans_cycles;
-  // APB (acceso a registros)
-  rand logic [15:0]                  APBaddr;
-  rand logic [31:0]                  APBdata;
-  rand bit                           Esc_Lec_APB;    // 1=Escritura, 0=Lectura
-  rand int unsigned                  conf_cycles;
-
-  function new();
-    md_data='0; md_offset='0; md_size='0; trans_cycles=0;
-    APBaddr='0; APBdata='0; Esc_Lec_APB=0; conf_cycles=0;
-  endfunction
-
-  function void print(string tag="");
-    $display("[%0t] %s pack1  md_data=0x%0h md_offset=%0d md_size=%0d trans=%0d | apb: addr=0x%0h data=0x%0h op=%s conf=%0d",
-             $time, tag, md_data, md_offset, md_size, trans_cycles, APBaddr, APBdata,
-             (Esc_Lec_APB ? "WRITE" : "READ"), conf_cycles);
-  endfunction
-
-
-endclass
-
-
 interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
     localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
     localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
