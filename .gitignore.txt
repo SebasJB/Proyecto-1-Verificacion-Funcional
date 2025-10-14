@@ -1,0 +1,4 @@
+*.log
+*.nlo
+*.out
+*.git
