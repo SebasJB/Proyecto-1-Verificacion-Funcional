@@ -48,7 +48,7 @@ endclass
 // ====================================================
 class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
-  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = 3;
 
   bit [ALGN_DATA_WIDTH-1:0]   data;
   bit [ALGN_OFFSET_WIDTH-1:0] offset;

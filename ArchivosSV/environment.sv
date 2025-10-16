@@ -3,6 +3,8 @@ class ambiente #(parameter int ALGN_DATA_WIDTH = 32);
   // --- Tipos e interfaces
   typedef MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) MD_pack1_t;
   typedef APB_pack1                                     APB_pack1_t;
+  typedef MD_pack2#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) MD_pack2_t;
+  typedef APB_pack2                                   APB_pack2_t;
   virtual MD_if  #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) md_vif;
   virtual APB_if                                   apb_vif;
 
@@ -27,7 +29,8 @@ class ambiente #(parameter int ALGN_DATA_WIDTH = 32);
   //mailbox #(APB_pack1_t) gcAPB_mailbox;
 
   // --- Mailboxes pack2 (monitores → sb / chk)
-  mailbox #(pack2)   msMD_mailbox,  msAPB_mailbox; // monitor → sb
+  mailbox #(MD_pack2_t)   msMD_mailbox;  
+  mailbox #(APB_pack2_t) msAPB_mailbox; // monitor → sb
   //mailbox #(pack2)   mcMD_mailbox,  mcAPB_mailbox; // monitor → chk
   // --- Mailboxes del test
   mailbox #(pack3)   tg_mailbox;   // test → generator (modo)
@@ -53,10 +56,7 @@ class ambiente #(parameter int ALGN_DATA_WIDTH = 32);
     md_drv_inst  = new(md_vif,  gdMD_mailbox);
     apb_drv_inst = new(apb_vif, gdAPB_mailbox);
     //aquí faltan mailboxes de checker
-    gen_inst      = new(gdMD_mailbox, gdAPB_mailbox, 
-                        gsMD_mailbox,
-                        gsAPB_mailbox,
-                        tg_mailbox);
+    gen_inst = new();
     scoreboard_inst = new(); 
     //checker_inst    = new();
     md_mon_inst     = new();

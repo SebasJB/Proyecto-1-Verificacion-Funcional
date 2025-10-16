@@ -219,28 +219,28 @@ mailbox #(pack3)       tg_mailbox;
 
 
   // Covergroup para MD: cubre size, offset y validez (70/30 o 100% legal en estrés)
-  covergroup cg_md with function sample(int size, int offset, bit is_valid);
-    option.per_instance = 1;
-    cp_sz : coverpoint size   { bins s[] = {0,1,2,4}; }
-    cp_of : coverpoint offset { bins o[] = {[0:3]}; }
-    cp_v  : coverpoint is_valid { bins ok={1}; bins bad={0}; }
-    cross cp_sz, cp_of;
-  endgroup
-  cg_md cg_md; // handle del covergroup
+//  covergroup cgg_md with function sample(int size, int offset, bit is_valid);
+//    option.per_instance = 1;
+//    cp_sz : coverpoint size   { bins s[] = {0,1,2,4}; }
+//    cp_of : coverpoint offset { bins o[] = {[0:3]}; }
+//    cp_v  : coverpoint is_valid { bins ok={1}; bins bad={0}; }
+//    cross cp_sz, cp_of;
+//  endgroup
+//  cgg_md cg_md; // handle del covergroup
 
   // Covergroup para APB: cubre dirección, tipo (RD/WR), validez de dirección
   // y los campos embebidos (size/offset) que viajan dentro de APBdata
-  covergroup cg_apb with function sample(logic [15:0] addr, bit wr, bit addr_valid, int apb_size, int apb_off);
-    option.per_instance = 1;
-    cp_dir : coverpoint addr { bins CTRL={16'h0000}; bins STAT={16'h000C};
-                               bins IRQE={16'h00F0}; bins IRQ={16'h00F4}; bins OTH=default; }
-    cp_wr  : coverpoint wr   { bins RD={0}; bins WR={1}; }
-    cp_vld : coverpoint addr_valid { bins V={1}; bins IV={0}; }
-    cp_as  : coverpoint apb_size { bins s[] = {[0:7]}; }
-    cp_ao  : coverpoint apb_off  { bins o[] = {[0:3]}; }
-    cross cp_dir, cp_wr;
-  endgroup
-  cg_apb cg_apb; // handle del covergroup
+//  covergroup cgg_apb with function sample(logic [15:0] addr, bit wr, bit addr_valid, int apb_size, int apb_off);
+//    option.per_instance = 1;
+//    cp_dir : coverpoint addr { bins CTRL={16'h0000}; bins STAT={16'h000C};
+//                               bins IRQE={16'h00F0}; bins IRQ={16'h00F4}; bins OTH=default; }
+//    cp_wr  : coverpoint wr   { bins RD={0}; bins WR={1}; }
+//    cp_vld : coverpoint addr_valid { bins V={1}; bins IV={0}; }
+//    cp_as  : coverpoint apb_size { bins s[] = {[0:7]}; }
+//    cp_ao  : coverpoint apb_off  { bins o[] = {[0:3]}; }
+//    cross cp_dir, cp_wr;
+//  endgroup
+//  cgg_apb cg_apb; // handle del covergroup
 
   // Constructor: conecta mailboxes y construye covergroups
   function new(
@@ -256,8 +256,8 @@ mailbox #(pack3)       tg_mailbox;
     gsMD_mailbox  = m_scbd_md; gcMD_mailbox  = m_chck_md;
     gsAPB_mailbox = m_scbd_apb; gcAPB_mailbox = m_chck_apb;
     tg_mailbox    = m_tg;
-    cg_md  = new();
-    cg_apb = new();
+   // cg_md  = new();
+   // cg_apb = new();
   endfunction
 
   // clone solo campos necesarios para drivers/scoreboard/checker
@@ -299,20 +299,20 @@ mailbox #(pack3)       tg_mailbox;
         // 1) CASO_GENERAL: MD y APB en paralelo, 70/30 en legalidad
         CASO_GENERAL: begin
           fork
-            begin : GEN_MD
+            begin //: GEN_MD
               for (int i=0; i<cmd.len_n_md; i++) begin
                 MD_pack1_t it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
-                cg_md.sample(it.md_size, it.md_offset, it.md_use_valid);
+                //cg_md.sample(it.md_size, it.md_offset, it.md_use_valid);
                 fanout_md(it);
               end
             end
-            begin : GEN_APB
+            begin //: GEN_APB
               for (int j=0; j<cmd.len_n_apb; j++) begin
                 APB_pack1_t it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
-                cg_apb.sample(it.APBaddr, it.Esc_Lec_APB, it.apb_addr_valid,
-                              it.apb_size_aux & 3'h7, it.apb_off_aux & 2'h3);
+                //cg_apb.sample(it.APBaddr, it.Esc_Lec_APB, it.apb_addr_valid,
+                 //             it.apb_size_aux & 3'h7, it.apb_off_aux & 2'h3);
                 fanout_apb(it);
               end
             end
@@ -322,20 +322,20 @@ mailbox #(pack3)       tg_mailbox;
         // 2) ESTRES: MD fuerza md_code=40 (size=4, off=0) y gaps cortos; APB con gaps cortos
         ESTRES: begin
           fork
-            begin : GEN_MD
+            begin //: GEN_MD
               for (int i=0; i<cmd.len_n_md; i++) begin
                 MD_pack1_t it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
-                cg_md.sample(it.md_size, it.md_offset, 1'b1);
+                //cg_md.sample(it.md_size, it.md_offset, 1'b1);
                 fanout_md(it);
               end
             end
-            begin : GEN_APB
+            begin //: GEN_APB
               for (int j=0; j<cmd.len_n_apb; j++) begin
                 APB_pack1_t it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
-                cg_apb.sample(it.APBaddr, it.Esc_Lec_APB, it.apb_addr_valid,
-                              it.apb_size_aux & 3'h7, it.apb_off_aux & 2'h3);
+                //cg_apb.sample(it.APBaddr, it.Esc_Lec_APB, it.apb_addr_valid,
+                 //             it.apb_size_aux & 3'h7, it.apb_off_aux & 2'h3);
                 fanout_apb(it);
               end
             end
@@ -345,15 +345,15 @@ mailbox #(pack3)       tg_mailbox;
         // 3) ERRORES: 600 transacciones MD/APB, 40/60 válidas/ inválidas
         ERRORES: begin
           fork
-            begin : GEN_MD_ERR
+            begin //: GEN_MD_ERR
               for (int i=0; i<cmd.len_n_md;  i++) begin
                 MD_pack1_t it_md = new(); it_md.mode = cmd.mode;
                 it_md.randomize(); it_md.post_randomize();
-                cg_md.sample(it_md.md_size, it_md.md_offset, !it_md.md_err_illegal);
+                //cg_md.sample(it_md.md_size, it_md.md_offset, !it_md.md_err_illegal);
                 fanout_md(it_md);
               end
             end
-            begin : GEN_APB_ERR
+            begin //: GEN_APB_ERR
               for (int i=0; i<cmd.len_n_apb; i++) begin
                 APB_pack1_t it_apb = new(); it_apb.mode = cmd.mode;
                 it_apb.randomize(); it_apb.post_randomize();
@@ -366,8 +366,8 @@ mailbox #(pack3)       tg_mailbox;
                   cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, 1'b1, 0, 0);
                 end else begin
                   if (it_apb.Esc_Lec_APB && it_apb.APBaddr==16'h0000) it_apb.APBdata[16]=1'b0;
-                  cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, it_apb.apb_addr_valid,
-                                it_apb.apb_size_aux & 3'h7, it_apb.apb_off_aux & 2'h3);
+                  //cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, it_apb.apb_addr_valid,
+                  //              it_apb.apb_size_aux & 3'h7, it_apb.apb_off_aux & 2'h3);
                 end
                 fanout_apb(it_apb);
               end
@@ -379,53 +379,53 @@ mailbox #(pack3)       tg_mailbox;
         APB_CFG: begin
           fork
             // ===== MD =====
-            begin : GEN_MD
+            begin //: GEN_MD
               for (int i=0; i<cmd.len_n_md; i++) begin
                 MD_pack1_t it_md = new(); it_md.mode = cmd.mode;
                 it_md.randomize();
                 it_md.post_randomize();
-                cg_md.sample(it_md.md_size, it_md.md_offset, it_md.md_use_valid);
+               // cg_md.sample(it_md.md_size, it_md.md_offset, it_md.md_use_valid);
                 fanout_md(it_md);
               end
             end
             // ===== APB =====
             // ===== APB =====
-            begin : GEN_APB
+            begin //: GEN_APB
               for (int j=0; j<cmd.len_n_apb; j++) begin
                 APB_pack1_t it_apb = new(); it_apb.mode = cmd.mode;
                 it_apb.randomize();
                 it_apb.post_randomize();
             
-                bit vld = it_apb.apb_addr_valid; // valor por defecto
+                //bit vld = it_apb.apb_addr_valid; // valor por defecto
             
                 // Inyecciones deterministas sobre IRQE/IRQ (forzar dirección válida)
                 case (j)
                   50: begin
                     it_apb.APBaddr        = 16'h00F0;  // IRQE
                     it_apb.Esc_Lec_APB    = 1'b1;      // WRITE
-                    it_apb.apb_addr_valid = 1'b1;      // coherencia total
-                    vld                   = 1'b1;
+                    it_apb.apb_addr_valid = 1'b1;      // coherencia total 
+                  //  vld                   = 1'b1;
                     it_apb.APBdata[4:0]   = 5'h1F;     // SET
                   end
                   60: begin
                     it_apb.APBaddr        = 16'h00F0;  // IRQE
                     it_apb.Esc_Lec_APB    = 1'b1;
                     it_apb.apb_addr_valid = 1'b1;
-                    vld                   = 1'b1;
+                  //  vld                   = 1'b1;
                     it_apb.APBdata[4:0]   = 5'h00;     // CLR
                   end
                   100: begin
                     it_apb.APBaddr        = 16'h00F4;  // IRQ
                     it_apb.Esc_Lec_APB    = 1'b1;
                     it_apb.apb_addr_valid = 1'b1;
-                    vld                   = 1'b1;
+                   // vld                   = 1'b1;
                     it_apb.APBdata[4:0]   = 5'h1F;     // SET IRQ flags
-                  end
+                  end 
                   default: ; // sin cambios
                 endcase
             
-                cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, vld,
-                              it_apb.apb_size_aux & 3'h7, it_apb.apb_off_aux & 2'h3);
+               // cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, vld,
+               //               it_apb.apb_size_aux & 3'h7, it_apb.apb_off_aux & 2'h3);
                 fanout_apb(it_apb);
               end
             end

@@ -5,16 +5,14 @@
 // ----------------------------------------------------
 typedef enum logic { APB_READ=0, APB_WRITE=1 } apb_dir_e;
 
-
-
 // ----------------------------------------------------
 // Scoreboard: consume msMD_mailbox y msAPB_mailbox,
 // acumula en queues y exporta CSV.
 // ----------------------------------------------------
-class Aligner_Scoreboard #(int ALGN_DATA_WIDTH = 32);
+class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
-  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = 3;
   // Mailboxes (exactos según tu requerimiento)
   mailbox msMD_mailbox;   // monitores → scoreboard (MD)
   mailbox msAPB_mailbox;  // monitores → scoreboard (APB)
@@ -26,20 +24,19 @@ class Aligner_Scoreboard #(int ALGN_DATA_WIDTH = 32);
   bit [ALGN_DATA_WIDTH-1:0] rx_data_q[$]; // para análisis de datos en RX
   bit [ALGN_OFFSET_WIDTH-1:0] rx_offset_q[$];  // para análisis de offsets en RX
   bit [ALGN_SIZE_WIDTH-1:0] rx_size_q[$]; // para análisis de tamaños en RX
-  int unsigned [ALGN_DATA_WIDTH-1:0] gaps_q[$]; // para análisis de gaps en RX
+  int unsigned gaps_q[$]; // para análisis de gaps en RX
 
   // ====== Queues de Monitor (MD) ======
   bit [ALGN_DATA_WIDTH-1:0] tx_data_q[$]; // para análisis de datos en TX
   bit [ALGN_OFFSET_WIDTH-1:0] tx_offset_q[$];  // para análisis de offsets en TX
   bit [ALGN_SIZE_WIDTH-1:0] tx_size_q[$]; // para análisis de tamaños en TX
   bit [ALGN_DATA_WIDTH-1:0] err_q[$]; // para análisis de errores en RX
-  time [ALGN_DATA_WIDTH-1:0] time_trans_q[$]; // para análisis de gaps en TX
-  int unsigned [ALGN_DATA_WIDTH-1:0] md_t_time_q[$]; // para análisis de tiempos de transacción en TX
-
+  time time_trans_q[$]; // para análisis de gaps en TX
+  int unsigned md_t_time_q[$]; // para análisis de tiempos de transacción en TX
 
 
   // ====== Queues de APB ======
-  apb_dir_e apb_Esc_Lec_APB_q[$]; // para análisis de esc/lec APB (0=lec,1=esc)
+  apb_dir_e apb_dir_q[$]; // para análisis de esc/lec APB (0=lec,1=esc)
   bit [15:0] apb_addr_q[$]; // para análisis de direcciones APB
   bit [31:0] apb_wdata_q[$];
   bit [31:0] apb_prdata_q[$];
@@ -65,9 +62,9 @@ class Aligner_Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
    // === Hilo consumidor de APB ===
   task consume_apb_monitor();
-    APB_pack1 apb_tr;
+    APB_pack2 apb_tr;
     forever begin
-      gsAPB_mailbox.get(apb_tr);
+      msAPB_mailbox.get(apb_tr);
       apb_dir_q.push_back(apb_tr.dir);
       apb_prdata_q.push_back(apb_tr.rdata);     // prdata (válido en lecturas)
       apb_pslverr_q.push_back(apb_tr.slverr);    // pslverr
@@ -81,8 +78,8 @@ class Aligner_Scoreboard #(int ALGN_DATA_WIDTH = 32);
   task consume_apb_generator();
     APB_pack1 apb_tr;
     forever begin
-      msAPB_mailbox.get(apb_tr);
-      apb_Esc_Lec_APB_q.push_back(apb_tr.Esc_Lec_APB);
+      gsAPB_mailbox.get(apb_tr);
+      apb_dir_q.push_back(apb_tr.Esc_Lec_APB ? APB_WRITE : APB_READ);
       apb_addr_q.push_back(apb_tr.APBaddr);
       apb_wdata_q.push_back(apb_tr.APBdata);
       apb_conf_cycles_q.push_back(apb_tr.conf_cycles);
@@ -90,7 +87,7 @@ class Aligner_Scoreboard #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task consume_md_generator();
-    MD_pack2#(ALGN_DATA_WIDTH) MD_tr;
+    MD_pack1#(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       gsMD_mailbox.get(MD_tr);
       rx_data_q.push_back(MD_tr.data);
@@ -155,7 +152,7 @@ class Aligner_Scoreboard #(int ALGN_DATA_WIDTH = 32);
         s_apb_err  = $sformatf("%0d",   apb_pslverr_q[i]);
         s_apb_addr = $sformatf("0x%0h", apb_addr_q[i]);
         s_apb_dir  = (apb_dir_q[i]==APB_WRITE) ? "W" : "R";
-        s_apb_wdat = $sformatf("0x%0h", apb_wdata[i]);
+        s_apb_wdat = $sformatf("0x%0h", apb_wdata_q[i]);
         s_apb_ws   = $sformatf("%0d",   apb_waitstates_q[i]);
       end else begin
         s_apb_prd = ""; s_apb_err = ""; s_apb_addr = ""; s_apb_dir = ""; s_apb_wdat = ""; s_apb_ws = "";
