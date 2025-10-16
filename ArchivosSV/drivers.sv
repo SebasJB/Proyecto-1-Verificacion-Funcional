@@ -36,10 +36,10 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
   // ==============================================================
   class md_driver #(parameter int ALGN_DATA_WIDTH = 32);
     virtual MD_if #(ALGN_DATA_WIDTH) vif;
-    mailbox #(MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox;
+    mailbox #(MD_pack1#) gdMD_mailbox;
   
     function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
-                 mailbox #(MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox);
+                 mailbox #(MD_pack1#) gdMD_mailbox);
       this.vif = vif;
       this.gdMD_mailbox = gdMD_mailbox;
     endfunction
