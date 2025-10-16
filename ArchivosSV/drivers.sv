@@ -36,10 +36,10 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
   // ==============================================================
   class md_driver #(parameter int ALGN_DATA_WIDTH = 32);
     virtual MD_if #(ALGN_DATA_WIDTH) vif;
-    mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox;
+    mailbox #(MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox;
   
     function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
-                 mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox);
+                 mailbox #(MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdMD_mailbox);
       this.vif = vif;
       this.gdMD_mailbox = gdMD_mailbox;
     endfunction
@@ -55,7 +55,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
 
     // Arranca el bucle de conducción
     task run();
-      pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) item;
+      MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) item;
       idle_lines();
       forever begin
         gdMD_mailbox.get(item);           // bloquea hasta tener un item
@@ -89,12 +89,11 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
   //  - Un ciclo después: bajar todo y esperar "conf_cycles"
   //  - Regla: pwrite=1 SOLO si (Esc_Lec_APB==1); en caso contrario 0.
   // ==============================================================
-  class apb_driver #(parameter int ALGN_DATA_WIDTH = 32);
+  class apb_driver;
     virtual APB_if vif;
-    mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdAPB_mailbox;
+    mailbox #(APB_pack1) gdAPB_mailbox;
   
-    function new(virtual APB_if vif,
-                 mailbox #(pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))) gdAPB_mailbox);
+    function new(virtual APB_if vif, mailbox #(APB_pack1) gdAPB_mailbox);
       this.vif = vif;
       this.gdAPB_mailbox = gdAPB_mailbox;
     endfunction
@@ -110,7 +109,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
 
     // Secuencia básica APB 
     task run();
-     pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) item;
+      APB_pack1 item;
       idle_bus();
       forever begin
         gdAPB_mailbox.get(item);

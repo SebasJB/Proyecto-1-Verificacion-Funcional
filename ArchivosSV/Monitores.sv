@@ -7,35 +7,33 @@ typedef enum logic { APB_READ=0, APB_WRITE=1 } apb_trans_type;
 // Transacción APB (capturada al completar la transferencia)
 // ====================================================
 class APB_pack2;
-  apb_trans_type   dir;
-  logic [15:0]     addr;
-  logic [31:0]     wdata;
-  logic [31:0]     rdata;
-  bit              slverr;
-  int unsigned     wait_states; // ciclos con penable=1 y pready=0
-  time             apb_t_time;     // tiempo total de la transacción (t_end - t_start)
+  apb_trans_type dir;
+  bit [15:0] addr;
+  bit [31:0] wdata;
+  bit [31:0] rdata;
+  bit slverr;
+  int unsigned wait_states; // ciclos con penable=1 hasta pready=0
+  time apb_t_time; // tiempo total de la transacción (t_end - t_start)
 
   function new();
-    dir         = APB_READ;
-    addr        = '0;
-    wdata       = '0;
-    rdata       = '0;
-    slverr      = 0;
+    dir = APB_READ;
+    addr = '0;
+    wdata = '0;
+    rdata = '0;
+    slverr = 0;
     wait_states = 0;
-    t_start     = 0;
-    t_end       = 0;
+    apb_t_time = 0;
   endfunction
 
   function APB_pack2 clone();
-    APB_Trans c = new();
-    c.dir         = this.dir;
-    c.addr        = this.addr;
-    c.wdata       = this.wdata;
-    c.rdata       = this.rdata;
-    c.slverr      = this.slverr;
+    APB_pack2 c = new();
+    c.dir = this.dir;
+    c.addr = this.addr;
+    c.wdata = this.wdata;
+    c.rdata = this.rdata;
+    c.slverr = this.slverr;
     c.wait_states = this.wait_states;
-    c.t_start     = this.t_start;
-    c.t_end       = this.t_end;
+    c.apb_t_time = this.apb_t_time;
     return c;
   endfunction
 
@@ -52,27 +50,27 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8);
 
-  logic [ALGN_DATA_WIDTH-1:0]   data;
-  logic [ALGN_OFFSET_WIDTH-1:0] offset;
-  logic [ALGN_SIZE_WIDTH-1:0]   size;
-  bit                           err;      // refleja md_tx_err
-  time                          t_sample; // tiempo del handshake válido
-  int unsigned                  md_t_time; // tiempo total de la transacción (t_end - t_start)
+  bit [ALGN_DATA_WIDTH-1:0]   data;
+  bit [ALGN_OFFSET_WIDTH-1:0] offset;
+  bit [ALGN_SIZE_WIDTH-1:0]   size;
+  bit err;      // refleja md_rx_err
+  time t_sample; // tiempo del handshake válido
+  int unsigned md_t_time; // tiempo total de la transacción (t_end - t_start)
 
   function new();
-    data     = '0;
-    offset   = '0;
-    size     = '0;
-    err      = 0;
+    data = '0;
+    offset = '0;
+    size = '0;
+    err = 0;
     t_sample = 0;
   endfunction
 
   function MD_pack2#(ALGN_DATA_WIDTH) clone();
-    MD_Trans#(ALGN_DATA_WIDTH) c = new();
-    c.data     = this.data;
-    c.offset   = this.offset;
-    c.size     = this.size;
-    c.err      = this.err;
+    MD_pack2#(ALGN_DATA_WIDTH) c = new();
+    c.data = this.data;
+    c.offset = this.offset;
+    c.size = this.size;
+    c.err = this.err;
     c.t_sample = this.t_sample;
     return c;
   endfunction
@@ -109,10 +107,10 @@ class APB_Monitor;
       // Espera fase SETUP
       @(posedge vif.clk iff (vif.psel || vif.penable));
       tr = new();
-      t_start   = $time;
-      tr.dir       = (vif.pwrite) ? APB_WRITE : APB_READ;
-      tr.addr      = vif.paddr;
-      tr.wdata     = vif.pwdata;
+      t_start = $time;
+      tr.dir = (vif.pwrite) ? APB_WRITE : APB_READ;
+      tr.addr = vif.paddr;
+      tr.wdata = vif.pwdata;
       tr.wait_states = 0;
 
       // Fase ACCESS: contar wait states hasta completar
@@ -121,7 +119,7 @@ class APB_Monitor;
         if (vif.penable && !vif.pready) tr.wait_states++;
       end;
       t_end  = $time;
-      tr.t_time = t_end - t_start;
+      tr.apb_t_time = t_end - t_start;
       tr.slverr = vif.pslverr;
       if (tr.dir == APB_READ) tr.rdata = vif.prdata;
 
@@ -137,59 +135,108 @@ class APB_Monitor;
 // - Captura data/offset/size y md_tx_err
 // - Publica clones a msMD_mailbox (scoreboard) y mcMD_mailbox (checker)
 // ====================================================
+// ----------------------------------------------------
+// Monitor de la salida TX del Aligner (MD_if)
+// - md_tx_ready SIEMPRE = 1 (acepta todo).
+// - Reporta cambios de md_tx_data (MD_EVT_CHANGE) con t_start/t_hold.
+// - Reporta handshakes (MD_EVT_HANDSHAKE) cuando (md_tx_valid && md_tx_ready).
+// - Publica a msMD_mailbox (scoreboard) y mcMD_mailbox (checker).
+// ----------------------------------------------------
 class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
-  // Interfaz virtual (parametrizada igual que tu MD_if)
+  // Interfaz virtual (tu MD_if)
   virtual MD_if #(ALGN_DATA_WIDTH) vif;
-  typedef pack2#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) pack2_t;
 
-  // Mailboxes con los nombres requeridos
-  mailbox  #(pack2_t) msMD_mailbox; // → scoreboard
-  mailbox  #(pack2_t) mcMD_mailbox; // → checker
+  // Mailboxes con los nombres exactos solicitados
+  mailbox msMD_mailbox; // → scoreboard
+  mailbox mcMD_mailbox; // → checker
 
-  bit [ALGN_DATA_WIDTH-1:0] prev_data;
+  // Estado para detectar cambios y medir tiempos
 
-  function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
-               mailbox msMD_mailbox,
-               mailbox mcMD_mailbox);
-    this.vif          = vif;
-    this.msMD_mailbox = msMD_mailbox;
-    this.mcMD_mailbox = mcMD_mailbox;
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8);
+
+  bit [ALGN_DATA_WIDTH-1:0]   last_data; // Último dato observado
+  bit [ALGN_OFFSET_WIDTH-1:0] last_offset; // Último offset observado
+  bit [ALGN_SIZE_WIDTH-1:0]   last_size; // Último tamaño observado
+  bit last_err; // Último error observado
+  time t_data_start; // inicio del "dato activo" actual
+
+  function new();
+    last_data = '0; // fuerza primer "cambio" al inicio
+    last_offset = '0;
+    last_size = '0;
+    last_err = '0;
+    t_data_start = 0;
   endfunction
 
   task run();
-    MD_pack2#(pack2_t) tr;
+    // Política de aceptar siempre
+    vif.md_tx_ready = 1'b1;
+
+    // Sin señal de reset en la interface, arrancamos tras un ciclo
+    @(posedge vif.clk);
+    // Inicializa referencia del primer dato observado
+    last_data = vif.md_tx_data;
+    last_offset = vif.md_tx_offset;
+    last_size = vif.md_tx_size;
+    last_err = vif.md_tx_err;
+    t_data_start = $time;
+
     forever begin
       @(posedge vif.clk);
-      vif.md_tx_ready = 1'b1; // ready siempre activo
-      if (vif.md_tx_valid) begin
-        fork
-          begin: Captura_de_datos
-           tr = new();
-           tr.data     <= vif.md_tx_data;
-           tr.offset   <= vif.md_tx_offset;
-           tr.size     <= vif.md_tx_size;
-           tr.err      <= vif.md_tx_err;
-           tr.t_sample <= $time;
-           tr.md_t_time <= 0;
-          end
-          begin: Cuenta_de_tiempo
-            @(posedge vif.clk);
-            while (vif.md_tx_data == prev_data) begin
-              @(posedge vif.clk); tr.md_t_time++;
-            end
-          end
+      // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
 
-        join_any
-        prev_data = vif.md_tx_data;
-        // Publicar a ambos consumidores
-        msMD_mailbox.put(tr.clone());
-        mcMD_mailbox.put(tr.clone());
+
+      if ((vif.md_tx_data != last_data) & vif.md_tx_valid) begin
+        // Cierra el "dato activo" anterior
+        MD_pack2#(ALGN_DATA_WIDTH) change_tr = new();
+        change_tr.data = vif.md_tx_data;
+        change_tr.offset = vif.md_tx_offset;
+        change_tr.size = vif.md_tx_size;
+        change_tr.err = vif.md_tx_err;
+        change_tr.t_sample = t_data_start;
+        change_tr.md_t_time = ($time - t_data_start);
+
+        // Publica duración del dato anterior
+        msMD_mailbox.put(change_tr.clone());
+        mcMD_mailbox.put(change_tr.clone());
+
+        // Inicia nuevo "dato activo"
+        last_data = vif.md_tx_data;
+        last_offset = vif.md_tx_offset;
+        last_size = vif.md_tx_size;
+        last_err = vif.md_tx_err;
+        t_data_start = $time;
+      end
+      // === 1) Reporte de HANDSHAKE (valid && ready) ===
+      else if (vif.md_tx_valid) begin
+        MD_pack2#(ALGN_DATA_WIDTH) handshake_tr = new();
+        handshake_tr.data = vif.md_tx_data;
+        handshake_tr.offset = vif.md_tx_offset;
+        handshake_tr.size = vif.md_tx_size;
+        handshake_tr.err = vif.md_tx_err;
+        handshake_tr.t_sample = t_data_start;
+        handshake_tr.md_t_time = ($time - t_data_start); // duración desde el último cambio
+        msMD_mailbox.put(handshake_tr.clone());
+        mcMD_mailbox.put(handshake_tr.clone());
+        // Reinicia medición del dato actual
+        last_data = vif.md_tx_data;
+        last_offset = vif.md_tx_offset;
+        last_size = vif.md_tx_size;
+        last_err = vif.md_tx_err;
+        t_data_start = $time;
+
+      end
+      // === 3) No hay cambio ni handshake ===
+    
+
+      else begin
+        // Se mantiene actualizados offset/size/err (por si varían sin cambio de data)
+        last_offset = vif.md_tx_offset;
+        last_size = vif.md_tx_size;
+        last_err = vif.md_tx_err;
       end
     end
   endtask
-
-endclass
-
-
 endclass
