@@ -1,11 +1,11 @@
 `timescale 1ns/1ps
+`include "design.v"
+`include "generador.sv"
 `include "drivers.sv"
 `include "Monitores.sv"
-`include "generador.sv"
 `include "Scoreboard.sv"
 `include "environment.sv"
 `include "test.sv"
-`include "design.sv"
 //==============================================================
 // Top-level testbench
 //==============================================================

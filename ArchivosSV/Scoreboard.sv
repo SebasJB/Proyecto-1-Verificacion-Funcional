@@ -90,10 +90,10 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     MD_pack1#(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       gsMD_mailbox.get(MD_tr);
-      rx_data_q.push_back(MD_tr.data);
-      rx_offset_q.push_back(MD_tr.offset);
-      rx_size_q.push_back(MD_tr.size);
-      gaps_q.push_back(MD_tr.gaps);
+      rx_data_q.push_back(MD_tr.md_data);
+      rx_offset_q.push_back(MD_tr.md_offset);
+      rx_size_q.push_back(MD_tr.md_size);
+      gaps_q.push_back(MD_tr.trans_cycles);
     end
   endtask
 
@@ -111,7 +111,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   // === Exportar CSV en columnas ===
   // Columnas: RX_data, RX_size, RX_offset, APB_prdata, APB_pslverr, TX_data, TX_size, TX_offset
   // + (opcional) APB_addr, APB_dir, APB_wdata, APB_waitstates
-  task write_csv(string path);
+ /* task write_csv(string path);
     int fd = $fopen(path, "w");
     if (fd == 0) begin
       $display("[%0t] [SB] ERROR: No se pudo abrir CSV '%s'", $time, path);
@@ -178,6 +178,6 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
     $fclose(fd);
     $display("[%0t] [SB] CSV escrito en '%s' (filas=%0d)", $time, path, n_rows);
-  endtask
+  endtask*/
 
 endclass

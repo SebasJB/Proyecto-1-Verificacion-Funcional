@@ -1,5 +1,4 @@
 class ambiente #(parameter int ALGN_DATA_WIDTH = 32);
-
   // --- Tipos e interfaces
   typedef MD_pack1#(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) MD_pack1_t;
   typedef APB_pack1                                     APB_pack1_t;
@@ -56,7 +55,13 @@ class ambiente #(parameter int ALGN_DATA_WIDTH = 32);
     md_drv_inst  = new(md_vif,  gdMD_mailbox);
     apb_drv_inst = new(apb_vif, gdAPB_mailbox);
     //aquí faltan mailboxes de checker
-    gen_inst = new();
+    gen_inst = new(
+      gdMD_mailbox,   // m_md
+      gdAPB_mailbox,  // m_apb
+      gsMD_mailbox,   // m_scbd_md
+      gsAPB_mailbox,  // m_scbd_apb
+      tg_mailbox      // m_tg (opcional, pero ya lo tienes)
+    );
     scoreboard_inst = new(); 
     //checker_inst    = new();
     md_mon_inst     = new();

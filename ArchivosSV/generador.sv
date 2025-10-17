@@ -213,8 +213,8 @@ class generator #(parameter int ALGN_DATA_WIDTH = 32);
   typedef APB_pack1                                     APB_pack1_t;
 
   // Mailboxes hacia drivers / scoreboard / checker y TEST->GENERATOR
-mailbox #(MD_pack1_t)  gdMD_mailbox, gsMD_mailbox, gcMD_mailbox;
-mailbox #(APB_pack1_t) gdAPB_mailbox, gsAPB_mailbox, gcAPB_mailbox;
+mailbox #(MD_pack1_t)  gdMD_mailbox, gsMD_mailbox; //gcMD_mailbox;
+mailbox #(APB_pack1_t) gdAPB_mailbox, gsAPB_mailbox; //gcAPB_mailbox;
 mailbox #(pack3)       tg_mailbox;
 
 
@@ -247,14 +247,12 @@ mailbox #(pack3)       tg_mailbox;
     mailbox #(MD_pack1_t)  m_md,
     mailbox #(APB_pack1_t) m_apb,
     mailbox #(MD_pack1_t)  m_scbd_md,
-    mailbox #(MD_pack1_t)  m_chck_md,
     mailbox #(APB_pack1_t) m_scbd_apb,
-    mailbox #(APB_pack1_t) m_chck_apb,
     mailbox #(pack3)       m_tg = null
   );
     gdMD_mailbox  = m_md;     gdAPB_mailbox = m_apb;
-    gsMD_mailbox  = m_scbd_md; gcMD_mailbox  = m_chck_md;
-    gsAPB_mailbox = m_scbd_apb; gcAPB_mailbox = m_chck_apb;
+    gsMD_mailbox  = m_scbd_md; 
+    gsAPB_mailbox = m_scbd_apb; 
     tg_mailbox    = m_tg;
    // cg_md  = new();
    // cg_apb = new();
@@ -279,13 +277,11 @@ mailbox #(pack3)       tg_mailbox;
   task automatic fanout_md(MD_pack1_t it);
     gdMD_mailbox.put(it);
     gsMD_mailbox.put(clone_md(it));
-    gcMD_mailbox.put(clone_md(it));
   endtask
   
   task automatic fanout_apb(APB_pack1_t it);
     gdAPB_mailbox.put(it);
     gsAPB_mailbox.put(clone_apb(it));
-    gcAPB_mailbox.put(clone_apb(it));
   endtask
 
   // Bucle principal: espera PACK3, genera secuencias por modo, cobertura y fanout
@@ -363,7 +359,7 @@ mailbox #(pack3)       tg_mailbox;
                   it_apb.Esc_Lec_APB    = 1'b1;
                   it_apb.APBdata        = 32'h0001_0000;
                   it_apb.apb_addr_valid = 1'b1;  // ✅ asegura coherencia con cobertura/scoreboard
-                  cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, 1'b1, 0, 0);
+                  //cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, 1'b1, 0, 0);
                 end else begin
                   if (it_apb.Esc_Lec_APB && it_apb.APBaddr==16'h0000) it_apb.APBdata[16]=1'b0;
                   //cg_apb.sample(it_apb.APBaddr, it_apb.Esc_Lec_APB, it_apb.apb_addr_valid,
@@ -435,10 +431,10 @@ mailbox #(pack3)       tg_mailbox;
 
         // si llega un modo desconocido, se procede a CASO_GENERAL
         default: begin
+          pack3 t = new();
           $display("[%0t] GENERATOR: modo desconocido, ejecutando CASO_GENERAL", $time);
-          pack3 tmp = new(CASO_GENERAL);
-          tmp.randomize();
-          tg_mailbox.put(tmp);
+          t.randomize();
+          tg_mailbox.put(t);
         end
       endcase
     end

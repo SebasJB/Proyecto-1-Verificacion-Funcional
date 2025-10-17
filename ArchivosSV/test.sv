@@ -33,13 +33,13 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
 
   // run(): lanza el ambiente y envía las 4 pruebas por tg_mailbox.
   task run();
+    pack3 cmd;
     $display("[%0t] [TEST] Inicializando ambiente…", $time);
 
     fork
       ambiente_inst.run(); // Arranca drivers, generator, monitores, scoreboard y checker
     join_none
 
-    pack3 cmd;
     // 1) CASO_GENERAL
     cmd = new();
     cmd.mode = CASO_GENERAL;  

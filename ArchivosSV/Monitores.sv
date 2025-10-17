@@ -128,6 +128,7 @@ class APB_Monitor;
       mcAPB_mailbox.put(tr.clone());
     end
   endtask
+endclass
 
 // ====================================================
 // MD Monitor (para MD_if, lado TX del Aligner)
