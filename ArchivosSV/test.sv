@@ -2,33 +2,17 @@
 class test #(parameter int ALGN_DATA_WIDTH = 32);
 
   // Ambiente e IFs virtuales 
-  ambiente #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))                    ambiente_inst;
-  virtual MD_if  #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH))              md_vif;
-  virtual APB_if                                                    apb_vif;
+  Ambiente #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) env;
+  virtual MD_if #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) md_vif;
+  virtual APB_if apb_vif;
 
-  mailbox #(pack3) tg_mailbox;     // TEST -> GENERATOR
-  //mailbox #(pack4) ts_mailbox;   // TEST -> SCOREBOARD
+  mailbox tg_mailbox; // TEST -> GENERATOR
 
-  // new(): recibe las interfaces, arma el ambiente y CABLEA los mailboxes
-  function new(
-    virtual MD_if #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) md_if,
-    virtual APB_if                                     apb_if
-  );
-    this.md_vif = md_if;
-    this.apb_vif = apb_if;
-
-    // Instancia ambiente
-    ambiente_inst = new(md_vif, apb_vif);
-
-    // Crea mailboxes del TEST
+  function new();
+    env = new();
     tg_mailbox   = new();
-    //ts_mailbox = new();
-
-    // conecta los mailboxes
-    ambiente_inst.tg_mailbox     = tg_mailbox;
-    ambiente_inst.gen_inst.tg_mailbox = tg_mailbox;      
-    //ambiente_inst.ts_mailbox   = ts_mailbox;
-    //ambiente_inst.scoreboard_inst.test_sb_mbx = ts_mailbox; 
+    env.tg_mailbox = tg_mailbox;
+    env.gen_inst.tg_mailbox = tg_mailbox;       
   endfunction
 
   // run(): lanza el ambiente y envía las 4 pruebas por tg_mailbox.
@@ -37,7 +21,7 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
     $display("[%0t] [TEST] Inicializando ambiente…", $time);
 
     fork
-      ambiente_inst.run(); // Arranca drivers, generator, monitores, scoreboard y checker
+      env.run(); // Arranca drivers, generator, monitores, scoreboard y checker
     join_none
 
     // 1) CASO_GENERAL
@@ -75,7 +59,7 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
     // A los 10000 ciclos, pedir REPORTE COMPLETO al scoreboard
     # 100000;
     $display("[%0t] [TEST] Solicitando REPORTE COMPLETO al Scoreboard", $time);
-    //ambiente_inst.scoreboard_inst.excel();
+    //env.scoreboard_inst.excel();
     # 100;
     $finish;
   endtask

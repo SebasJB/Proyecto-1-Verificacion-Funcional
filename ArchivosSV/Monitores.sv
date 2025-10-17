@@ -1,90 +1,4 @@
 // ====================================================
-// Tipos básicos
-// ====================================================
-typedef enum logic { APB_READ=0, APB_WRITE=1 } apb_trans_type;
-
-// ====================================================
-// Transacción APB (capturada al completar la transferencia)
-// ====================================================
-class APB_pack2;
-  apb_trans_type dir;
-  bit [15:0] addr;
-  bit [31:0] wdata;
-  bit [31:0] rdata;
-  bit slverr;
-  int unsigned wait_states; // ciclos con penable=1 hasta pready=0
-  time apb_t_time; // tiempo total de la transacción (t_end - t_start)
-
-  function new();
-    dir = APB_READ;
-    addr = '0;
-    wdata = '0;
-    rdata = '0;
-    slverr = 0;
-    wait_states = 0;
-    apb_t_time = 0;
-  endfunction
-
-  function APB_pack2 clone();
-    APB_pack2 c = new();
-    c.dir = this.dir;
-    c.addr = this.addr;
-    c.wdata = this.wdata;
-    c.rdata = this.rdata;
-    c.slverr = this.slverr;
-    c.wait_states = this.wait_states;
-    c.apb_t_time = this.apb_t_time;
-    return c;
-  endfunction
-
-  function string sprint();
-    return $sformatf("APB %s @0x%0h w=0x%0h r=0x%0h slverr=%0b ws=%0d",(dir==APB_WRITE)?"WRITE":"READ",addr, wdata, rdata, slverr, wait_states);
-  endfunction
-endclass
-
-// ====================================================
-// Transacción MD (lado TX del Aligner, parametrizable)
-// Usa el mismo cálculo de anchos que tu interface MD_if
-// ====================================================
-class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
-  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
-  localparam int ALGN_SIZE_WIDTH   = 3;
-
-  bit [ALGN_DATA_WIDTH-1:0]   data;
-  bit [ALGN_OFFSET_WIDTH-1:0] offset;
-  bit [ALGN_SIZE_WIDTH-1:0]   size;
-  bit err;      // refleja md_rx_err
-  time t_sample; // tiempo del handshake válido
-  int unsigned md_t_time; // tiempo total de la transacción (t_end - t_start)
-
-  function new();
-    data = '0;
-    offset = '0;
-    size = '0;
-    err = 0;
-    t_sample = 0;
-  endfunction
-
-  function MD_pack2#(ALGN_DATA_WIDTH) clone();
-    MD_pack2#(ALGN_DATA_WIDTH) c = new();
-    c.data = this.data;
-    c.offset = this.offset;
-    c.size = this.size;
-    c.err = this.err;
-    c.t_sample = this.t_sample;
-    return c;
-  endfunction
-
-  function string sprint();
-    return $sformatf("MD_TX data=0x%0h off=%0d size=%0d err=%0b", data, offset, size, err);
-  endfunction
-endclass
-
-
-
-
-
-// ====================================================
 // APB Monitor (para APB_if)
 // - Detecta SETUP:  psel=1 && penable=0
 // - Cuenta wait states durante ACCESS: penable=1 hasta pready=1
@@ -96,8 +10,8 @@ class APB_Monitor;
   virtual APB_if vif; 
 
   // Mailboxes con los nombres requeridos
-   mailbox #(APB_pack2_t) msAPB_mailbox; // → scoreboard
-  mailbox mcAPB_mailbox; // → checker
+  mailbox msAPB_mailbox; // Monitor → scoreboard: APB transactions
+  mailbox mcAPB_mailbox; // Monitor → checker: APB transactions
  
   time t_start, t_end;
 
@@ -149,13 +63,13 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   virtual MD_if #(ALGN_DATA_WIDTH) vif;
 
   // Mailboxes con los nombres exactos solicitados
-  mailbox msMD_mailbox; // → scoreboard
-  mailbox mcMD_mailbox; // → checker
+  mailbox msMD_mailbox; // Monitor → scoreboard: MD transactions
+  mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Estado para detectar cambios y medir tiempos
 
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
-  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
   bit [ALGN_DATA_WIDTH-1:0]   last_data; // Último dato observado
   bit [ALGN_OFFSET_WIDTH-1:0] last_offset; // Último offset observado

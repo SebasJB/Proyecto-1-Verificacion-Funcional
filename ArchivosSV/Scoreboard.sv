@@ -1,9 +1,3 @@
-// ----------------------------------------------------
-// Tipos auxiliares mínimos (solo si aún no existen en tu TB)
-// Si ya tienes APB_Trans y MD_pack2, omite estas definiciones
-// y deja solo la clase MD_RxTrans y la clase Scoreboard.
-// ----------------------------------------------------
-typedef enum logic { APBREAD=0, APBWRITE=1 } apb_dir_e;
 
 // ----------------------------------------------------
 // Scoreboard: consume msMD_mailbox y msAPB_mailbox,
@@ -36,7 +30,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
 
   // ====== Queues de APB ======
-  apb_dir_e apb_dir_q[$]; // para análisis de esc/lec APB (0=lec,1=esc)
+  apb_trans_type apb_dir_q[$]; // para análisis de esc/lec APB (0=lec,1=esc)
   bit [15:0] apb_addr_q[$]; // para análisis de direcciones APB
   bit [31:0] apb_wdata_q[$];
   bit [31:0] apb_prdata_q[$];

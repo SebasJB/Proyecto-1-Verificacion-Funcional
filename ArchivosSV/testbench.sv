@@ -1,5 +1,6 @@
 `timescale 1ns/1ps
 `include "design.v"
+`include "trans_items"
 `include "generador.sv"
 `include "drivers.sv"
 `include "Monitores.sv"
@@ -13,7 +14,7 @@ module tb_top;
 
   // --- Parámetros del DUT / TB
   localparam int ALGN_DATA_WIDTH = 32;
-  localparam int FIFO_DEPTH      = 8;
+  localparam int FIFO_DEPTH = 8;
 
   // --- Reloj y reset
   logic clk;
@@ -29,11 +30,9 @@ module tb_top;
   end
 
   // --- Interfaces virtuales hacia el ambiente
-  MD_if  #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) md_if   (clk);
-  APB_if                                    apb_if  (clk);
+  MD_if #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) md_if (clk);
+  APB_if apb_if (clk);
 
-  // Mantener listo el canal TX del DUT (evita backpressure si aún no hay sink)
-  initial md_if.md_tx_ready = 1'b1;
 
   // --- DUT
   cfs_aligner #(

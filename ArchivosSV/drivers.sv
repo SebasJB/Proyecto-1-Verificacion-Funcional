@@ -34,15 +34,9 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
   //    hasta que md_rx_ready = 1; un ciclo después baja todo a 0.
   //  - Respeta "trans_cycles" antes de la siguiente transacción.
   // ==============================================================
-  class md_driver #(parameter int ALGN_DATA_WIDTH = 32);
-    virtual MD_if #(ALGN_DATA_WIDTH) vif;
-    mailbox #(MD_pack1#) gdMD_mailbox;
-  
-    function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
-                 mailbox #(MD_pack1#) gdMD_mailbox);
-      this.vif = vif;
-      this.gdMD_mailbox = gdMD_mailbox;
-    endfunction
+  class MD_Driver #(parameter int ALGN_DATA_WIDTH = 32);
+    virtual MD_if #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) vif;
+    mailbox gdMD_mailbox;
 
     // Pone la interfaz en reposo
     task automatic idle_lines();
@@ -89,14 +83,9 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
   //  - Un ciclo después: bajar todo y esperar "conf_cycles"
   //  - Regla: pwrite=1 SOLO si (Esc_Lec_APB==1); en caso contrario 0.
   // ==============================================================
-  class apb_driver;
+  class APB_Driver;
     virtual APB_if vif;
-    mailbox #(APB_pack1) gdAPB_mailbox;
-  
-    function new(virtual APB_if vif, mailbox #(APB_pack1) gdAPB_mailbox);
-      this.vif = vif;
-      this.gdAPB_mailbox = gdAPB_mailbox;
-    endfunction
+    mailbox gdAPB_mailbox;
 
     task automatic idle_bus();
       vif.psel    = 1'b0;
