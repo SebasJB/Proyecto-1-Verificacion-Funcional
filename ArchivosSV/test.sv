@@ -12,7 +12,7 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
     env = new();
     tg_mailbox   = new();
     env.tg_mailbox = tg_mailbox;
-    env.gen_inst.tg_mailbox = tg_mailbox;       
+    env.Generador.tg_mailbox = tg_mailbox;       
   endfunction
 
   // run(): lanza el ambiente y envía las 4 pruebas por tg_mailbox.

@@ -90,7 +90,7 @@ module tb_top;
     md_if.md_rx_size   = '0;
 
     // Instanciar y lanzar el test una vez liberado el reset
-    t0 = new(md_if, apb_if);
+    t0 = new();
     @(posedge reset_n);
     fork
       t0.run();

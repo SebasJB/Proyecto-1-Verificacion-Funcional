@@ -73,7 +73,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     APB_pack1 apb_tr;
     forever begin
       gsAPB_mailbox.get(apb_tr);
-      apb_dir_q.push_back(apb_tr.Esc_Lec_APB ? APBWRITE : APBREAD);
+      apb_dir_q.push_back(apb_tr.Esc_Lec_APB ? APB_WRITE : APB_READ);
       apb_addr_q.push_back(apb_tr.APBaddr);
       apb_wdata_q.push_back(apb_tr.APBdata);
       apb_conf_cycles_q.push_back(apb_tr.conf_cycles);
