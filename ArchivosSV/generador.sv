@@ -8,9 +8,9 @@ class Generator #(parameter int ALGN_DATA_WIDTH = 32);
 
 
   // Mailboxes hacia drivers / scoreboard / checker y TEST->GENERATOR
-mailbox gdMD_mailbox, //Generador -> drivers : MD
+mailbox gdMD_mailbox; //Generador -> drivers : MD
 mailbox gsMD_mailbox; //Generador -> scoreboard : MD
-mailbox gdAPB_mailbox, //Generador -> drivers : APB
+mailbox gdAPB_mailbox; //Generador -> drivers : APB
 mailbox gsAPB_mailbox; //Generador -> scoreboard : APB
 mailbox tg_mailbox; //TEST -> GENERATOR
 
@@ -41,8 +41,8 @@ mailbox tg_mailbox; //TEST -> GENERATOR
 
 
   // clone solo campos necesarios para drivers/scoreboard/checker
-  function automatic MD_pack1_t clone_md(MD_pack1_t s);
-    MD_pack1_t d = new();
+  function automatic MD_pack1 clone_md(MD_pack1 s);
+    MD_pack1 d = new();
     d.md_data = s.md_data;
     d.md_size = s.md_size;
     d.md_offset = s.md_offset;
@@ -50,24 +50,24 @@ mailbox tg_mailbox; //TEST -> GENERATOR
     d.mode = s.mode;
     return d;
   endfunction
-  
-  function automatic APB_pack1_t clone_apb(APB_pack1_t s);
-    APB_pack1_t d = new();
-    d.APBaddr = s.APBaddr; 
-    d.APBdata = s.APBdata; 
-    d.Esc_Lec_APB = s.Esc_Lec_APB; 
+
+  function automatic APB_pack1 clone_apb(APB_pack1 s);
+    APB_pack1 d = new();
+    d.APBaddr = s.APBaddr;
+    d.APBdata = s.APBdata;
+    d.Esc_Lec_APB = s.Esc_Lec_APB;
     d.conf_cycles = s.conf_cycles;
     d.mode = s.mode;
     return d;
   endfunction
 
   // Envía el ítem a drivers y réplicas a scoreboard/checker por sus mailboxes
-  task automatic fanout_md(MD_pack1_t it);
+  task automatic fanout_md(MD_pack1 it);
     gdMD_mailbox.put(clone_md(it));
     gsMD_mailbox.put(clone_md(it));
   endtask
   
-  task automatic fanout_apb(APB_pack1_t it);
+  task automatic fanout_apb(APB_pack1 it);
     gdAPB_mailbox.put(clone_apb(it));
     gsAPB_mailbox.put(clone_apb(it));
   endtask
@@ -85,7 +85,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
           fork
             begin //GEN_MD
               for (int i=0; i<cmd.len_n_md; i++) begin
-                MD_pack1_t it = new(); it.mode = cmd.mode;
+                MD_pack1 it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
                 //cg_md.sample(it.md_size, it.md_offset, it.md_use_valid);
                 fanout_md(it);
@@ -93,7 +93,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
             end
             begin //GEN_APB
               for (int j=0; j<cmd.len_n_apb; j++) begin
-                APB_pack1_t it = new(); it.mode = cmd.mode;
+                APB_pack1 it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
                 //cg_apb.sample(it.APBaddr, it.Esc_Lec_APB, it.apb_addr_valid,
                  //             it.apb_size_aux & 3'h7, it.apb_off_aux & 2'h3);
@@ -108,7 +108,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
           fork
             begin //GEN_MD
               for (int i=0; i<cmd.len_n_md; i++) begin
-                MD_pack1_t it = new(); it.mode = cmd.mode;
+                MD_pack1 it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
                 //cg_md.sample(it.md_size, it.md_offset, 1'b1);
                 fanout_md(it);
@@ -116,7 +116,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
             end
             begin //GEN_APB
               for (int j=0; j<cmd.len_n_apb; j++) begin
-                APB_pack1_t it = new(); it.mode = cmd.mode;
+                APB_pack1 it = new(); it.mode = cmd.mode;
                 it.randomize(); it.post_randomize();
                 //cg_apb.sample(it.APBaddr, it.Esc_Lec_APB, it.apb_addr_valid,
                  //             it.apb_size_aux & 3'h7, it.apb_off_aux & 2'h3);
@@ -131,7 +131,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
           fork
             begin //GEN_MD_ERR
               for (int i=0; i<cmd.len_n_md;  i++) begin
-                MD_pack1_t it_md = new(); it_md.mode = cmd.mode;
+                MD_pack1 it_md = new(); it_md.mode = cmd.mode;
                 it_md.randomize(); it_md.post_randomize();
                 //cg_md.sample(it_md.md_size, it_md.md_offset, !it_md.md_err_illegal);
                 fanout_md(it_md);
@@ -139,7 +139,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
             end
             begin //GEN_APB_ERR
               for (int i=0; i<cmd.len_n_apb; i++) begin
-                APB_pack1_t it_apb = new(); it_apb.mode = cmd.mode;
+                APB_pack1 it_apb = new(); it_apb.mode = cmd.mode;
                 it_apb.randomize(); it_apb.post_randomize();
           
                 if (i == 550) begin
@@ -165,7 +165,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
             // ===== MD =====
             begin //GEN_MD
               for (int i=0; i<cmd.len_n_md; i++) begin
-                MD_pack1_t it_md = new(); it_md.mode = cmd.mode;
+                MD_pack1 it_md = new(); it_md.mode = cmd.mode;
                 it_md.randomize();
                 it_md.post_randomize();
                // cg_md.sample(it_md.md_size, it_md.md_offset, it_md.md_use_valid);
@@ -175,7 +175,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
             // ===== APB =====
             begin //GEN_APB
               for (int j=0; j<cmd.len_n_apb; j++) begin
-                APB_pack1_t it_apb = new(); it_apb.mode = cmd.mode;
+                APB_pack1 it_apb = new(); it_apb.mode = cmd.mode;
                 it_apb.randomize();
                 it_apb.post_randomize();
             

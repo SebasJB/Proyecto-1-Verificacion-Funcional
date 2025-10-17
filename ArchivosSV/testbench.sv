@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 `include "design.v"
-`include "trans_items"
+`include "trans_items.sv"
 `include "generador.sv"
 `include "drivers.sv"
 `include "Monitores.sv"
