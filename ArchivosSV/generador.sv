@@ -74,9 +74,11 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   }
 
   // Mapear md_code -> (md_size, md_offset) cuando NO estamos en ERRORES
+  constraint c_md_order {
+    solve md_code before md_size, md_offset;
+  }
   constraint c_md_map {
     if (mode!=ERRORES) {
-      solve md_code before md_size, md_offset;
       md_size   == (md_code/10);
       md_offset == (md_code%10);
     }
@@ -96,9 +98,11 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
     }
   }
   // Mapeo directo en ERRORES: md_err_code → md_size/md_offset
-  constraint c_md_err_map    {
+  constraint c_md_err_order {
+    solve md_err_code before md_size, md_offset;
+  }
+  constraint c_md_err_map {
     if (mode==ERRORES) {
-      solve md_err_code before md_size, md_offset;
       md_size   == (md_err_code/10);
       md_offset == (md_err_code%10);
     }

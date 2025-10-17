@@ -93,12 +93,12 @@ endclass
 // ====================================================
 class APB_Monitor;
   // Interfaz virtual
-  virtual APB_if vif;
+  virtual APB_if vif; 
 
   // Mailboxes con los nombres requeridos
-  mailbox msAPB_mailbox; // → scoreboard
+   mailbox #(APB_pack2_t) msAPB_mailbox; // → scoreboard
   mailbox mcAPB_mailbox; // → checker
-
+ 
   time t_start, t_end;
 
   task run();

@@ -3,7 +3,7 @@
 // Si ya tienes APB_Trans y MD_pack2, omite estas definiciones
 // y deja solo la clase MD_RxTrans y la clase Scoreboard.
 // ----------------------------------------------------
-typedef enum logic { APB_READ=0, APB_WRITE=1 } apb_dir_e;
+typedef enum logic { APBREAD=0, APBWRITE=1 } apb_dir_e;
 
 // ----------------------------------------------------
 // Scoreboard: consume msMD_mailbox y msAPB_mailbox,
@@ -79,7 +79,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     APB_pack1 apb_tr;
     forever begin
       gsAPB_mailbox.get(apb_tr);
-      apb_dir_q.push_back(apb_tr.Esc_Lec_APB ? APB_WRITE : APB_READ);
+      apb_dir_q.push_back(apb_tr.Esc_Lec_APB ? APBWRITE : APBREAD);
       apb_addr_q.push_back(apb_tr.APBaddr);
       apb_wdata_q.push_back(apb_tr.APBdata);
       apb_conf_cycles_q.push_back(apb_tr.conf_cycles);
@@ -151,7 +151,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
         s_apb_prd  = $sformatf("0x%0h", apb_prdata_q[i]);
         s_apb_err  = $sformatf("%0d",   apb_pslverr_q[i]);
         s_apb_addr = $sformatf("0x%0h", apb_addr_q[i]);
-        s_apb_dir  = (apb_dir_q[i]==APB_WRITE) ? "W" : "R";
+        s_apb_dir  = (apb_dir_q[i]==APBWRITE) ? "W" : "R";
         s_apb_wdat = $sformatf("0x%0h", apb_wdata_q[i]);
         s_apb_ws   = $sformatf("%0d",   apb_waitstates_q[i]);
       end else begin
