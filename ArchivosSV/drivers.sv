@@ -69,7 +69,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.md_rx_offset = item.md_offset;
         vif.md_rx_size   = item.md_size;
         vif.md_rx_valid  = 1'b1;
-        $display("[%0t] MD_DRV SETUP  mode=%s tx#=%0d  data=0x%0h off=%0d size=%0d",
+        $display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",
         $time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
 
         wait (vif.md_rx_ready === 1'b1);    // se libera en el MISMO ciclo si ready 
@@ -133,7 +133,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
                ? item.APBdata : '0;
         vif.psel    = 1'b1;
         vif.penable = 1'b0;
-        $display("[%0t] APB_DRV SETUP  mode=%s tx#=%0d  %s addr=0x%0h data=0x%0h",
+        $display("[%0t] APB_DRV SETUP  test=%s tran#=%0d  %s addr=0x%0h data=0x%0h",
         $time, mode2str(item.mode), item.txn_num, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
         @(posedge vif.clk);
 
