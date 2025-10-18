@@ -91,12 +91,18 @@ module tb_top;
 
     // Instanciar y lanzar el test una vez liberado el reset
     t0 = new();
+    t0.md_vif = md_if;
+    t0.apb_vif = apb_if;
+    t0.env.MD_drv.vif = md_if;
+    t0.env.APB_drv.vif = apb_if;
+    t0.env.MD_mon.vif = md_if;
+    t0.env.APB_mon.vif = apb_if;
     @(posedge reset_n);
     fork
       t0.run();
     join_none
   end
-
+  
   // --- Watchdog de seguridad por si algo quedara colgado
   initial begin
     // 200us de tiempo simulado a 10ns de periodo

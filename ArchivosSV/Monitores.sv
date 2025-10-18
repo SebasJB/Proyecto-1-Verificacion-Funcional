@@ -39,7 +39,7 @@ class APB_Monitor;
 
       // Publicar a ambos consumidores
       msAPB_mailbox.put(tr.clone());
-      mcAPB_mailbox.put(tr.clone());
+      //mcAPB_mailbox.put(tr.clone());
     end
   endtask
 endclass
@@ -64,7 +64,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Mailboxes con los nombres exactos solicitados
   mailbox msMD_mailbox; // Monitor → scoreboard: MD transactions
-  mailbox mcMD_mailbox; // Monitor → checker: MD transactions
+  //mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Estado para detectar cambios y medir tiempos
 
@@ -115,7 +115,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
         // Publica duración del dato anterior
         msMD_mailbox.put(change_tr.clone());
-        mcMD_mailbox.put(change_tr.clone());
+        //mcMD_mailbox.put(change_tr.clone());
 
         // Inicia nuevo "dato activo"
         last_data = vif.md_tx_data;
@@ -134,7 +134,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         handshake_tr.t_sample = t_data_start;
         handshake_tr.md_t_time = ($time - t_data_start); // duración desde el último cambio
         msMD_mailbox.put(handshake_tr.clone());
-        mcMD_mailbox.put(handshake_tr.clone());
+        //mcMD_mailbox.put(handshake_tr.clone());
         // Reinicia medición del dato actual
         last_data = vif.md_tx_data;
         last_offset = vif.md_tx_offset;
