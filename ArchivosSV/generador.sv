@@ -48,6 +48,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
     d.md_offset = s.md_offset;
     d.trans_cycles = s.trans_cycles;
     d.mode = s.mode;
+    d.txn_num  = s.txn_num;
     return d;
   endfunction
 
@@ -58,6 +59,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
     d.Esc_Lec_APB = s.Esc_Lec_APB;
     d.conf_cycles = s.conf_cycles;
     d.mode = s.mode;
+    d.txn_num  = s.txn_num;
     return d;
   endfunction
 
