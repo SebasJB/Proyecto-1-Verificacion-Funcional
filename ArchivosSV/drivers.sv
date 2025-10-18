@@ -38,6 +38,16 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
     virtual MD_if #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) vif;
     mailbox gdMD_mailbox;
 
+    static function string mode2str(test_e m);
+    case (m)
+      CASO_GENERAL: mode2str = "CASO_GENERAL";
+      ESTRES:       mode2str = "ESTRES";
+      ERRORES:      mode2str = "ERRORES";
+      APB_CFG:      mode2str = "APB_CFG";
+      default:      mode2str = $sformatf("UNK(%0d)", m);
+    endcase
+    endfunction
+
     // Pone la interfaz en reposo
     task automatic idle_lines();
       vif.md_rx_valid  = 1'b0;
@@ -59,17 +69,18 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.md_rx_offset = item.md_offset;
         vif.md_rx_size   = item.md_size;
         vif.md_rx_valid  = 1'b1;
-        $display("[%0t] MD_DRV SETUP  data=0x%0h off=%0d size=%0d", $time, item.md_data, item.md_offset, item.md_size);
+        $display("[%0t] MD_DRV SETUP  mode=%s tx#=%0d  data=0x%0h off=%0d size=%0d",
+        $time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
 
         wait (vif.md_rx_ready === 1'b1);    // se libera en el MISMO ciclo si ready 
-        $display("[%0t] MD_DRV  ready=1", $time);
+        $display("[%0t] MD_DRV  ready=1 err=%0b", $time, vif.md_rx_err);
         // Un ciclo después de ready=1, soltar líneas a 0
         @(posedge vif.clk);
         vif.md_rx_valid  = 1'b0;
         vif.md_rx_data   = '0;
         vif.md_rx_offset = '0;
         vif.md_rx_size   = '0;
-        $display("[%0t] MD_DRV DONE  gap=%0d", $time, item.trans_cycles);
+        $display("[%0t] MD_DRV  gap=%0d", $time, item.trans_cycles);
         // tiempo de espera siguiente transacción
         repeat (item.trans_cycles) @(posedge vif.clk);
       end
@@ -86,6 +97,16 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
   class APB_Driver;
     virtual APB_if vif;
     mailbox gdAPB_mailbox;
+
+    static function string mode2str(test_e m);
+    case (m)
+      CASO_GENERAL: mode2str = "CASO_GENERAL";
+      ESTRES:       mode2str = "ESTRES";
+      ERRORES:      mode2str = "ERRORES";
+      APB_CFG:      mode2str = "APB_CFG";
+      default:      mode2str = $sformatf("UNK(%0d)", m);
+    endcase
+    endfunction
 
     task automatic idle_bus();
       vif.psel    = 1'b0;
@@ -112,8 +133,8 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
                ? item.APBdata : '0;
         vif.psel    = 1'b1;
         vif.penable = 1'b0;
-        $display("[%0t] APB_DRV SETUP  %s addr=0x%0h data=0x%0h",
-         $time, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
+        $display("[%0t] APB_DRV SETUP  mode=%s tx#=%0d  %s addr=0x%0h data=0x%0h",
+        $time, mode2str(item.mode), item.txn_num, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
         @(posedge vif.clk);
 
         // ---- ACCESS: levantar PENABLE y esperar PREADY ----
@@ -123,11 +144,11 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         wait (vif.pready === 1'b1);
         // Si es lectura, tomar datos ahora (ciclo de PREADY)
         if (!item.Esc_Lec_APB) begin
-          $display("[%0t] APB_DRV READ  addr=0x%0h data=0x%0h err=%0b",
+          $display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b",
                    $time, item.APBaddr, vif.prdata, vif.pslverr);
         end else begin
           // LOG write complete
-          $display("[%0t] APB_DRV WRITE DONE  addr=0x%0h data=0x%0h err=%0b",
+          $display("[%0t] APB_DRV WRITE  addr=0x%0h data=0x%0h err=%0b",
                    $time, item.APBaddr, item.APBdata, vif.pslverr);
         end
         // Flanco inmediatamente POSTERIOR al flanco que tuvo PREADY=1 -> bajar
@@ -137,7 +158,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.pwrite  = 1'b0;
         vif.paddr   = '0;
         vif.pwdata  = '0;
-        $display("[%0t] APB_DRV IDLE  gap=%0d", $time, item.conf_cycles);
+        $display("[%0t] APB_DRV DONE IDLE  gap=%0d", $time, item.conf_cycles);
         // ---- transacciones entre configuraciones ----------------------------
         repeat (item.conf_cycles) @(posedge vif.clk);
       end

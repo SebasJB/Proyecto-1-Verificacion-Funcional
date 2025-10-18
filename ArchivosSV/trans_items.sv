@@ -15,8 +15,8 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_OFFSET_WIDTH = 2;
   localparam int ALGN_SIZE_WIDTH   = 3;
 
-  // Contexto (modo de prueba)
-  test_e mode;
+  test_e mode;      // tipo de prueba
+  int    txn_num;   // número de transacción
 
   // ---- Señales MD hacia el DUT ----
   rand logic [ALGN_DATA_WIDTH-1:0]   md_data;
@@ -108,7 +108,8 @@ endclass
 class APB_pack1;
 
   // Contexto (modo de prueba)
-  test_e mode;
+  test_e mode;      // tipo de prueba
+  int    txn_num;   // número de transacción
 
   // ---- APB (acceso a registros) ----
   rand logic [15:0] APBaddr;
