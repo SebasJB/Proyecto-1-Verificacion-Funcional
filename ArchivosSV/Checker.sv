@@ -83,7 +83,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
       if (!have) begin
         md_tx_s null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
-        if (compare_one(null_exp, got_d, got_sz, got_off)) begin
+        if (compare_one(null_exp, got_d)) begin
           n_pass++;
           $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
         end else begin
@@ -94,7 +94,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
       end
 
       // Para salidas válidas, el golden fija offset_out=0 y size_out=CTRL_SIZE
-      if (compare_one(exp, got_d, got_sz, got_off)) begin
+      if (compare_one(exp, got_d)) begin
         n_pass++;
         $display("[CHK] #%0d OK (size=%0d)", n_checked, CTRL_SIZE);
       end else begin
