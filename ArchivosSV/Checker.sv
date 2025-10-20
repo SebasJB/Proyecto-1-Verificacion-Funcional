@@ -49,16 +49,14 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   function automatic bit compare_one(
       input md_tx_s exp,
       input MD_Tx_Sample got_data,
-      input logic [ALGN_SIZE_WIDTH-1:0] got_size,
-      input logic [ALGN_OFFSET_WIDTH-1:0] got_offset
   );
     bit ok = 1;
-    if (exp.data_out    != got_data)   ok = 0;
-    if (exp.ctrl_size   != got_size)   ok = 0;
-    if (exp.ctrl_offset != got_offset) ok = 0;
+    if (exp.data_out != got_data.data_out) ok = 0;
+    if (exp.ctrl_size != got_data.ctrl_size) ok = 0;
+    if (exp.ctrl_offset != got_data.ctrl_offset) ok = 0;
 
     if (!ok) begin
-      $error("[CHK] MISMATCH " | "exp_data=%h got_data=%h | "| "exp_size=%0d got_size=%0d | " | "exp_size=%0d got_size=%0d | " | "exp_off=%0d got_off=%0d", exp.data_out, got_data, exp.ctrl_size, got_size, exp.ctrl_offset, got_offset);
+      $error("[CHK] MISMATCH " | "exp_data=%h got_data=%h | "| "exp_size=%0d got_size=%0d | " | "exp_size=%0d got_size=%0d | " | "exp_off=%0d got_off=%0d", exp.data_out, got_data.data_out, exp.ctrl_size, got_data.ctrl_size, exp.ctrl_offset, got_data.ctrl_offset);
     end
     return ok;
   endfunction
