@@ -48,7 +48,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   // ---- Comparación 1:1 contra lo observado en el paquete
   function automatic bit compare_one(
       input md_tx_s exp,
-      input MD_Rx_Sample [W-1:0] got_data,
+      input MD_Rx_Sample got_data,
       input logic [ALGN_SIZE_WIDTH-1:0] got_size,
       input logic [ALGN_OFFSET_WIDTH-1:0] got_offset
   );
