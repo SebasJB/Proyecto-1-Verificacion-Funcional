@@ -66,12 +66,13 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     MD_pack2 #(W) pkt;
     md_tx_s exp;
     bit have;
-    MD_Tx_Sample #(W) got_d = pkt.data_out;
+    MD_Tx_Sample #(W) got_d;
     logic [ALGN_SIZE_WIDTH-1:0] got_sz;
     logic [ALGN_OFFSET_WIDTH-1:0] got_off;
 
     forever begin
       mcMD_mailbox.get(pkt); // bloqueante
+      got_d = pkt.data_out
       n_checked++;
       have = build_expected_one(pkt, exp);
 
