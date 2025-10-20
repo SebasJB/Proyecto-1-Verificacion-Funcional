@@ -227,29 +227,7 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
 endclass
 */
 
-class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
-  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
-  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
-  MD_Rx_Sample [ALGN_DATA_WIDTH-1:0] data_in[$]; // refleja md_rx_data que alimentaron esta TX (pueden ser varias y/o fracciones)
-  MD_Tx_Sample  [ALGN_DATA_WIDTH-1:0] data_out; // refleja md_tx_data
-  bit [ALGN_OFFSET_WIDTH-1:0] offset_out; // refleja md_tx_offset
-  bit [ALGN_SIZE_WIDTH-1:0]   size_out;   // refleja md_tx_size
-  bit err;      // refleja md_tx_err
-  time t_data_in; // tiempo del primer muestreo válido
-  time t_data_out;  // tiempo del último muestreo válido
-  time t_tx_sample; // tiempo del handshake válido
-
-  function MD_pack2#(ALGN_DATA_WIDTH) clone(MD_pack2#(ALGN_DATA_WIDTH) original);
-    MD_pack2#(ALGN_DATA_WIDTH) c = new();
-    c.data_in = original.data_in;
-    c.data_out = original.data_out;
-    c.offset_out = original.offset_out;
-    c.size_out = original.size_out;
-    c.err = original.err;
-    c.t_sample = original.t_sample;
-    return c;
-  endfunction
 
 // ====================================================
 // APB_pack2: (capturada al completar la transferencia)
@@ -345,4 +323,26 @@ class MD_Tx_Sample #(int ALGN_DATA_WIDTH = 32);
   endfunction
 endclass
 
+class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
+  MD_Rx_Sample [ALGN_DATA_WIDTH-1:0] data_in[$]; // refleja md_rx_data que alimentaron esta TX (pueden ser varias y/o fracciones)
+  MD_Tx_Sample  [ALGN_DATA_WIDTH-1:0] data_out; // refleja md_tx_data
+  bit [ALGN_OFFSET_WIDTH-1:0] offset_out; // refleja md_tx_offset
+  bit [ALGN_SIZE_WIDTH-1:0]   size_out;   // refleja md_tx_size
+  bit err;      // refleja md_tx_err
+  time t_data_in; // tiempo del primer muestreo válido
+  time t_data_out;  // tiempo del último muestreo válido
+  time t_tx_sample; // tiempo del handshake válido
+
+  function MD_pack2#(ALGN_DATA_WIDTH) clone(MD_pack2#(ALGN_DATA_WIDTH) original);
+    MD_pack2#(ALGN_DATA_WIDTH) c = new();
+    c.data_in = original.data_in;
+    c.data_out = original.data_out;
+    c.offset_out = original.offset_out;
+    c.size_out = original.size_out;
+    c.err = original.err;
+    c.t_sample = original.t_sample;
+    return c;
+  endfunction

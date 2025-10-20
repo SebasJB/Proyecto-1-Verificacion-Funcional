@@ -5,6 +5,7 @@
 `include "drivers.sv"
 `include "Monitores.sv"
 `include "Scoreboard.sv"
+`include "Checker.sv"
 `include "environment.sv"
 `include "test.sv"
 //==============================================================
