@@ -140,7 +140,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     trans.err = num_err;
   endfunction
 
-  task void send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
+  task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
     msMD_mailbox.put(trans.clone());
     mcMD_mailbox.put(trans.clone());
   endtask
