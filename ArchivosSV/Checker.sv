@@ -72,6 +72,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
     forever begin
       mcMD_mailbox.get(pkt); // bloqueante
+      $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       got_d = pkt.data_out;
       n_checked++;
       have = build_expected_one(pkt, exp);
