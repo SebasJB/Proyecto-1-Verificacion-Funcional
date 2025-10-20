@@ -48,7 +48,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   // ---- Comparación 1:1 contra lo observado en el paquete
   function automatic bit compare_one(
       input md_tx_s exp,
-      input MD_Tx_Sample got_data,
+      input MD_Tx_Sample got_data
   );
     bit ok = 1;
     if (exp.data_out != got_data.data_out) ok = 0;
