@@ -64,7 +64,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Mailboxes con los nombres exactos solicitados
   mailbox msMD_mailbox; // Monitor → scoreboard: MD transactions
-  //mailbox mcMD_mailbox; // Monitor → checker: MD transactions
+  mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Estado para detectar cambios y medir tiempos
 
@@ -218,15 +218,14 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     vif.md_tx_ready = 1'b1; // Siempre listo para enviar
      @(posedge vif.clk);
     // Inicializa referencia del primer dato observado
-    last_data = vif.md_tx_data;
-    last_offset = vif.md_tx_offset;
-    last_size = vif.md_tx_size;
-    last_err = vif.md_tx_err;
+    last_data_tx = vif.md_tx_data;
+    last_offset_tx = vif.md_tx_offset;
+    last_size_tx = vif.md_tx_size;
 
     forever begin
       @(posedge vif.clk);
       // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
-      if ((vif.md_tx_data != last_data) & vif.md_tx_valid) begin
+      if ((vif.md_tx_data != last_data_tx) & vif.md_tx_valid) begin
         // Cierra el "dato activo" anterior
         MD_Tx_Sample #(ALGN_DATA_WIDTH) change_tr = new();
         change_tr.data_out = vif.md_tx_data;
@@ -239,10 +238,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         mcMD_mailbox.put(change_tr.clone());
 
         // Inicia nuevo "dato activo"
-        last_data = vif.md_tx_data;
-        last_offset = vif.md_tx_offset;
-        last_size = vif.md_tx_size;
-        last_err = vif.md_tx_err;
+        last_data_tx = vif.md_tx_data;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx = vif.md_tx_size;
       end
       else if (vif.md_tx_valid) begin
         MD_Tx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
@@ -254,17 +252,15 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         mcMD_mailbox.put(handshake_tr.clone());
 
         // Reinicia medición del dato actual
-        last_data = vif.md_tx_data;
-        last_offset = vif.md_tx_offset;
-        last_size = vif.md_tx_size;
-        last_err = vif.md_tx_err;
+        last_data_tx = vif.md_tx_data;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx = vif.md_tx_size;
       end
       // === 3) No hay cambio ni handshake ===
       else begin
         // Se mantiene actualizados offset/size/err (por si varían sin cambio de data)
-        last_offset = vif.md_tx_offset;
-        last_size = vif.md_tx_size;
-        last_err = vif.md_tx_err;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx = vif.md_tx_size;
       end
     end
   endtask
