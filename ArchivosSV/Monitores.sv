@@ -118,17 +118,17 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     return total;
   endfunction
 
-  function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo [$], ref MD_pack2 #(ALGN_DATA_WIDTH) trans, int unsigned num_bytes);
+  function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], ref MD_pack2 #(ALGN_DATA_WIDTH) trans, int unsigned num_bytes);
     int unsigned bytes_to_consume = num_bytes;
     bit num_err = 0;
-    
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) current_sample;
+    int unsigned sample_bytes;
     while (bytes_to_consume > 0) begin
       if (rx_fifo.size() == 0) begin
         $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", num_bytes);
-      end
-
-      MD_Rx_Sample #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) current_sample = rx_fifo[0];
-      int unsigned sample_bytes = (bytes_to_consume <= current_sample.bytes_left) ? bytes_to_consume : current_sample.bytes_left;
+      end     
+      current_sample = rx_fifo[0];
+      sample_bytes = (bytes_to_consume <= current_sample.bytes_left) ? bytes_to_consume : current_sample.bytes_left;
       if (current_sample.bytes_left == 0) begin
         rx_fifo.pop_front();
         continue;
@@ -283,13 +283,14 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task aligner();
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample;
+    MD_pack2 #(ALGN_DATA_WIDTH) tr;
     forever begin
       wait (data_out_buffer.size() > 0);
-
-      MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample = data_out_buffer.pop_front();
+      tx_sample = data_out_buffer.pop_front();
       while (rx_bytes_available() < tx_sample.size) begin
         @(posedge vif.clk);
-        Md_pack2 #(ALGN_DATA_WIDTH) tr = new();
+        tr = new();
         tr.data_out = tx_sample;
         tr.t_data_out = tx_sample.t_sample;
         consume_rx_bytes(data_in_buffer, tr, tx_sample.size);

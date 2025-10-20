@@ -1,4 +1,4 @@
-package cfs_checker_pkg;
+package checker_pkg;
 
   parameter int ALGN_DATA_WIDTH = 32;
   localparam int BYTES_W        = (ALGN_DATA_WIDTH/8);
@@ -32,9 +32,11 @@ package cfs_checker_pkg;
       input  md_rx_s in_s,
       inout  byte    byte_stream[$]   // se va llenando con bytes válidos
   );
+    int unsigned o;
+    int unsigned s;
     if (!is_align_valid(in_s.offset, in_s.size)) return; // descarta inválidas
-    int o = in_s.offset;
-    int s = in_s.size;
+    o = in_s.offset;
+    s = in_s.size;
     for (int i = 0; i < s; i++) begin
       byte b = in_s.data[8*(o+i) +: 8]; // byte 0 en LSB
       byte_stream.push_back(b);
