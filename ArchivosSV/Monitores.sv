@@ -94,7 +94,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     sample.offset = vif.md_rx_offset;
     sample.size = vif.md_rx_size;
     sample.err = vif.md_rx_err;
-    sample.t_sample = t_sample;
+    sample.t_sample = $time;
     sample.bytes_left = sample.size;
     data_in_buffer.push_back(sample);
   endfunction
@@ -102,9 +102,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   function void push_tx_buffer();
     MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
     sample.data_out = vif.md_tx_data;
-    sample.offset_out = vif.md_tx_offset;
-    sample.size_out = vif.md_tx_size;
-    sample.t_sample = t_sample;
+    sample.ctrl_offset = vif.md_tx_offset;
+    sample.ctrl_size = vif.md_tx_size;
+    sample.t_sample = $time;
     data_out_buffer.push_back(sample);
   endfunction
 
@@ -187,7 +187,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end
 
       else if (vif.md_rx_ready) begin
-        MD_pack2#(ALGN_DATA_WIDTH) handshake_tr = new();
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
         handshake_tr.data_in = vif.md_rx_data;
         handshake_tr.offset = vif.md_rx_offset;
         handshake_tr.size = vif.md_rx_size;
@@ -228,7 +228,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
       if ((vif.md_tx_data != last_data) & vif.md_tx_valid) begin
         // Cierra el "dato activo" anterior
-        MD_pack2#(ALGN_DATA_WIDTH) change_tr = new();
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) change_tr = new();
         change_tr.data_out = vif.md_tx_data;
         change_tr.ctrl_offset = vif.md_tx_offset;
         change_tr.ctrl_size = vif.md_tx_size;
@@ -245,7 +245,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         last_err = vif.md_tx_err;
       end
       else if (vif.md_tx_valid) begin
-        MD_pack2#(ALGN_DATA_WIDTH) handshake_tr = new();
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
         handshake_tr.data_out = vif.md_tx_data;
         handshake_tr.ctrl_offset = vif.md_tx_offset;
         handshake_tr.ctrl_size = vif.md_tx_size;
