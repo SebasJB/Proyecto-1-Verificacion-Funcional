@@ -265,7 +265,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     forever begin
       wait (data_out_buffer.size() > 0);
       tx_sample = data_out_buffer.pop_front();
-      while (rx_bytes_available() != 0) begin
+      while (rx_bytes_available() < tx_sample.ctrl_size) begin
         $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes", tx_sample.ctrl_size);
         @(posedge vif.clk);
         tr = new();
