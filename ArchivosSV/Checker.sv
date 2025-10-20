@@ -63,7 +63,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
   // ---- Hilo principal del checker
   task run();
-    MD_pack2#(W) pkt;
+    MD_pack2 #(W) pkt;
     md_tx_s exp;
     bit have;
     MD_Tx_Sample #(W) got_d = pkt.data_out;
