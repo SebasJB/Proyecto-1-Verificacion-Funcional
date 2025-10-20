@@ -66,12 +66,11 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   // ---- Hilo principal del checker
   task run();
     MD_pack2#(W) pkt;
+    md_tx_s exp;
 
     forever begin
       mcMD_mailbox.get(pkt); // bloqueante
       n_checked++;
-
-      md_tx_s exp;
       bit have = build_expected_one(pkt, exp);
 
       // Convención: si no hay suficientes bytes para formar una salida,
