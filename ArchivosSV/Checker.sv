@@ -78,8 +78,8 @@ class Checker #(int W = ALGN_DATA_WIDTH);
       // Convención: si no hay suficientes bytes para formar una salida,
       // esperamos que el DUT NO haya emitido dato (o emita 0,0,0 según tu monitor).
       got_d   = pkt.data_out;
-      got_sz  = got_d.size_out;
-      got_off = got_d.offset_out;
+      got_sz  = got_d.ctrl_size;
+      got_off = got_d.ctrl_offset;
 
       if (!have) begin
         md_tx_s null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
