@@ -72,8 +72,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
 
-  MD_Rx_Sample [ALGN_DATA_WIDTH-1:0] data_in_buffer[$]; // buffer de datos recibidos
-  MD_Rx_Sample [ALGN_DATA_WIDTH-1:0] data_out_buffer[$]; // buffer de datos enviados
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_buffer[$]; // buffer de datos recibidos
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_out_buffer[$]; // buffer de datos enviados
 
 
   //Variables de ultimos valores observados rx
@@ -127,7 +127,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", num_bytes);
       end
 
-      MD_Rx_Sample #(ALGN_DATA_WIDTH) current_sample = rx_fifo[0];
+      MD_Rx_Sample #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) current_sample = rx_fifo[0];
       int unsigned sample_bytes = (bytes_to_consume <= current_sample.bytes_left) ? bytes_to_consume : current_sample.bytes_left;
       if (current_sample.bytes_left == 0) begin
         rx_fifo.pop_front();
