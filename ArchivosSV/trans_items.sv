@@ -12,7 +12,7 @@ typedef enum int {MD_PACKED_OK, MD_PACKED_PARTIAL} md_pack_status_e;
 // ============================================================================
 class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
 
-  // Tamaños para offset/size (idénticos al pack1 original)
+  // Tamaños para offset/size (idénticos al pack1 this)
   localparam int ALGN_OFFSET_WIDTH = 2;
   localparam int ALGN_SIZE_WIDTH   = 3;
 
@@ -25,7 +25,7 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   rand logic [ALGN_SIZE_WIDTH-1:0]   md_size;       // {0,1,2,4} codificado en 3b
   rand int unsigned                  trans_cycles;  // gap entre beats
 
-  // ---- Variables auxiliares/decisión (mismo modelo que el pack1 original) ----
+  // ---- Variables auxiliares/decisión (mismo modelo que el pack1 this) ----
   // General / estrés
   rand int md_code;           // 10*size + offset
   rand bit md_use_valid;      // 70% válidos / 30% inválidos
@@ -338,14 +338,14 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
   time t_data_out;  // tiempo del último muestreo válido
   time t_tx_sample; // tiempo del handshake válido
 
-  function MD_pack2#(ALGN_DATA_WIDTH) clone(MD_pack2#(ALGN_DATA_WIDTH) original);
+  function MD_pack2 #(ALGN_DATA_WIDTH) clone();
     MD_pack2#(ALGN_DATA_WIDTH) c = new();
-    c.data_in = original.data_in;
-    c.data_out = original.data_out;
-    c.offset_out = original.offset_out;
-    c.size_out = original.size_out;
-    c.err = original.err;
-    c.t_tx_sample = original.t_tx_sample;
+    c.data_in = this.data_in;
+    c.data_out = this.data_out;
+    c.offset_out = this.offset_out;
+    c.size_out = this.size_out;
+    c.err = this.err;
+    c.t_tx_sample = this.t_tx_sample;
     return c;
   endfunction
 endclass

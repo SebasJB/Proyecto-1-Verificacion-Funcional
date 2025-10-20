@@ -15,13 +15,13 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
 
   // ====== Queues de generador (MD) ======
-  bit [ALGN_DATA_WIDTH-1:0] rx_data_q[$]; // para análisis de datos en RX
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_data_q[$]; // para análisis de datos en RX
   bit [ALGN_OFFSET_WIDTH-1:0] rx_offset_q[$];  // para análisis de offsets en RX
   bit [ALGN_SIZE_WIDTH-1:0] rx_size_q[$]; // para análisis de tamaños en RX
   int unsigned gaps_q[$]; // para análisis de gaps en RX
 
   // ====== Queues de Monitor (MD) ======
-  bit [ALGN_DATA_WIDTH-1:0] tx_data_q[$]; // para análisis de datos en TX
+  MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_data_q[$]; // para análisis de datos en TX
   bit [ALGN_OFFSET_WIDTH-1:0] tx_offset_q[$];  // para análisis de offsets en TX
   bit [ALGN_SIZE_WIDTH-1:0] tx_size_q[$]; // para análisis de tamaños en TX
   bit [ALGN_DATA_WIDTH-1:0] err_q[$]; // para análisis de errores en RX

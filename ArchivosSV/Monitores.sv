@@ -141,8 +141,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endfunction
 
   function void send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
-    msMD_mailbox.put(trans.clone(trans));
-    mcMD_mailbox.put(trans.clone(trans));
+    msMD_mailbox.put(trans.clone());
+    mcMD_mailbox.put(trans.clone());
   endfunction
 
   task sample_rx_data();
@@ -256,6 +256,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   task aligner();
     MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample;
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
+    int unsigned bytes;
     forever begin
       wait (data_out_buffer.size() > 0);
       tx_sample = data_out_buffer.pop_front();
@@ -264,7 +265,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tr = new();
         tr.data_out = tx_sample;
         tr.t_data_out = tx_sample.t_sample;
-        consume_rx_bytes(data_in_buffer, tr, tx_sample.ctrl_size);
+        bytes = tx_sample.ctrl_size;
+        consume_rx_bytes(data_in_buffer, tr, bytes);
         send_transaction(tr);
       end
     end
