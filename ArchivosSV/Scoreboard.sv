@@ -15,12 +15,17 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
 
   // ====== Queues de generador (MD) ======
-  MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_data_q[$]; // para análisis de datos en RX
+  bit #(ALGN_DATA_WIDTH) rx_data_q[$]; // para análisis de datos en RX
   bit [ALGN_OFFSET_WIDTH-1:0] rx_offset_q[$];  // para análisis de offsets en RX
   bit [ALGN_SIZE_WIDTH-1:0] rx_size_q[$]; // para análisis de tamaños en RX
   int unsigned gaps_q[$]; // para análisis de gaps en RX
 
   // ====== Queues de Monitor (MD) ======
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) mon_rx_data_q[$]; // para análisis de datos en RX
+  bit [ALGN_OFFSET_WIDTH-1:0] mon_rx_offset_q[$];  // para análisis de offsets en RX
+  bit [ALGN_SIZE_WIDTH-1:0] mon_rx_size_q[$]; // para análisis de tamaños en RX
+  int unsigned mon_gaps_q[$]; // para análisis de gaps en RX
+
   MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_data_q[$]; // para análisis de datos en TX
   bit [ALGN_OFFSET_WIDTH-1:0] tx_offset_q[$];  // para análisis de offsets en TX
   bit [ALGN_SIZE_WIDTH-1:0] tx_size_q[$]; // para análisis de tamaños en TX
@@ -44,9 +49,12 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
   // === Hilo consumidor de MD  ===
   task consume_md_monitor();
-    MD_pack2#(ALGN_DATA_WIDTH) MD_tr;
+    MD_pack2 #(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       msMD_mailbox.get(MD_tr);
+      mon_rx_data_q.push_back(MD_tr.data_in);
+      mon_rx_offset_q.push_back(MD_tr.offset_in);
+      mon_rx_size_q.push_back(MD_tr.size_in);
       tx_data_q.push_back(MD_tr.data_out);
       tx_offset_q.push_back(MD_tr.offset_out);
       tx_size_q.push_back(MD_tr.size_out);
@@ -84,7 +92,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task consume_md_generator();
-    MD_pack1#(ALGN_DATA_WIDTH) MD_tr;
+    MD_pack1 #(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       gsMD_mailbox.get(MD_tr);
       rx_data_q.push_back(MD_tr.md_data);
