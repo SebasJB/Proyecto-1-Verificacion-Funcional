@@ -25,7 +25,9 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   bit [ALGN_OFFSET_WIDTH-1:0] tx_offset_q[$];  // para análisis de offsets en TX
   bit [ALGN_SIZE_WIDTH-1:0] tx_size_q[$]; // para análisis de tamaños en TX
   bit [ALGN_DATA_WIDTH-1:0] err_q[$]; // para análisis de errores en RX
-  time time_trans_q[$]; // para análisis de gaps en TX
+  time t_in[$]; // para análisis de gaps en TX
+  time t_out[$]; // para análisis de gaps en TX
+  time time_trans_q[$]; // para análisis de gaps totales
   int unsigned md_t_time_q[$]; // para análisis de tiempos de transacción en TX
 
 
@@ -45,11 +47,13 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     MD_pack2#(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       msMD_mailbox.get(MD_tr);
-      tx_data_q.push_back(MD_tr.data);
-      tx_offset_q.push_back(MD_tr.offset);
-      tx_size_q.push_back(MD_tr.size);
+      tx_data_q.push_back(MD_tr.data_out);
+      tx_offset_q.push_back(MD_tr.offset_out);
+      tx_size_q.push_back(MD_tr.size_out);
       err_q.push_back(MD_tr.err);
-      time_trans_q.push_back(MD_tr.t_sample);
+      t_in.push_back(MD_tr.t_data_in);
+      t_out.push_back(MD_tr.t_data_out);
+      time_trans_q.push_back(MD_tr.t_data_in - MD_tr.t_tx_sample);
       md_t_time_q.push_back(MD_tr.md_t_time);
     end
   endtask
