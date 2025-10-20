@@ -160,9 +160,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
 
       if ((vif.md_rx_data != last_data_rx) & vif.md_rx_ready) begin
-        $display("[MD_MON] Cambio de dato RX detectado");
-        // Cierra el "dato activo" anterior
         MD_Rx_Sample #(ALGN_DATA_WIDTH) sample = new();
+
+        $display("[MD_MON] Cambio de dato RX detectado");
         sample.data_in = vif.md_rx_data;
         sample.offset = vif.md_rx_offset;
         sample.size = vif.md_rx_size;
@@ -180,8 +180,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end
 
       else if (vif.md_rx_ready) begin
-        $display("[MD_MON] Handshake RX detectado");
         MD_Rx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
+        $display("[MD_MON] Handshake RX detectado");
         handshake_tr.data_in = vif.md_rx_data;
         handshake_tr.offset = vif.md_rx_offset;
         handshake_tr.size = vif.md_rx_size;
@@ -221,9 +221,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       @(posedge vif.clk);
       // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
       if ((vif.md_tx_data != last_data_tx) & vif.md_tx_valid) begin
-        $display("[MD_MON] Cambio de dato TX detectado");
         // Cierra el "dato activo" anterior
         MD_Tx_Sample #(ALGN_DATA_WIDTH) change_tr = new();
+        $display("[MD_MON] Cambio de dato TX detectado");
         change_tr.data_out = vif.md_tx_data;
         change_tr.ctrl_offset = vif.md_tx_offset;
         change_tr.ctrl_size = vif.md_tx_size;
@@ -236,8 +236,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         last_size_tx = vif.md_tx_size;
       end
       else if (vif.md_tx_valid) begin
-        $display("[MD_MON] Handshake TX detectado");
         MD_Tx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
+        $display("[MD_MON] Handshake TX detectado");
         handshake_tr.data_out = vif.md_tx_data;
         handshake_tr.ctrl_offset = vif.md_tx_offset;
         handshake_tr.ctrl_size = vif.md_tx_size;
