@@ -81,32 +81,30 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   bit [ALGN_OFFSET_WIDTH-1:0] last_offset_rx; // Último offset observado
   bit [ALGN_SIZE_WIDTH-1:0]   last_size_rx; // Último tamaño observado
   bit last_err_rx; // Último error observado
-  time t_data_start_rx; // inicio del "dato activo" actual
 
   //Variables de ultimos valores observados tx
   bit [ALGN_DATA_WIDTH-1:0]   last_data_tx; // Último dato observado
   bit [ALGN_OFFSET_WIDTH-1:0] last_offset_tx; // Último offset observado
   bit [ALGN_SIZE_WIDTH-1:0]   last_size_tx; // Último tamaño observado
   bit last_err_tx; // Último error observado
-  time t_data_start_tx; // inicio del "dato activo" actual
 
   function void push_rx_buffer();
     MD_Rx_Sample #(ALGN_DATA_WIDTH) sample;
-    sample.data = vif.md_rx_data;
+    sample.data_in = vif.md_rx_data;
     sample.offset = vif.md_rx_offset;
     sample.size = vif.md_rx_size;
     sample.err = vif.md_rx_err;
-    sample.t_sample = t_data_start;
+    sample.t_sample = t_sample;
     sample.bytes_left = sample.size;
     data_in_buffer.push_back(sample);
   endfunction
 
   function void push_tx_buffer();
     MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
-    sample.data = vif.md_tx_data;
-    sample.offset = vif.md_tx_offset;
-    sample.size = vif.md_tx_size;
-    sample.t_sample = t_data_start;
+    sample.data_out = vif.md_tx_data;
+    sample.offset_out = vif.md_tx_offset;
+    sample.size_out = vif.md_tx_size;
+    sample.t_sample = t_sample;
     data_out_buffer.push_back(sample);
   endfunction
 
@@ -161,7 +159,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     last_offset_rx = vif.md_rx_offset;
     last_size_rx = vif.md_rx_size;
     last_err_rx = vif.md_rx_err;
-    t_data_start_rx = $time;
 
     forever begin
       @(posedge vif.clk);
@@ -170,42 +167,39 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if ((vif.md_rx_data != last_data_rx) & vif.md_rx_ready) begin
         // Cierra el "dato activo" anterior
-        MD_pack2#(ALGN_DATA_WIDTH) change_tr = new();
-        change_tr.data = vif.md_rx_data;
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) change_tr = new();
+        change_tr.data_in = vif.md_rx_data;
         change_tr.offset = vif.md_rx_offset;
         change_tr.size = vif.md_rx_size;
         change_tr.err = vif.md_rx_err;
-        change_tr.t_sample = t_data_start_rx;
-        change_tr.md_t_time = ($time - t_data_start_rx);
+        change_tr.t_sample = $time;
+        change_tr.bytes_left = change_tr.size;
 
         // Publica duración del dato anterior
         msMD_mailbox.put(change_tr.clone());
-        //mcMD_mailbox.put(change_tr.clone());
+        mcMD_mailbox.put(change_tr.clone());
 
         // Inicia nuevo "dato activo"
         last_data_rx = vif.md_rx_data;
         last_offset_rx = vif.md_rx_offset;
         last_size_rx = vif.md_rx_size;
         last_err_rx = vif.md_rx_err;
-        t_data_start_rx = $time;
       end
 
       else if (vif.md_rx_ready) begin
         MD_pack2#(ALGN_DATA_WIDTH) handshake_tr = new();
-        handshake_tr.data = vif.md_rx_data;
+        handshake_tr.data_in = vif.md_rx_data;
         handshake_tr.offset = vif.md_rx_offset;
         handshake_tr.size = vif.md_rx_size;
         handshake_tr.err = vif.md_rx_err;
-        handshake_tr.t_sample = t_data_start_rx;
-        handshake_tr.md_t_time = ($time - t_data_start_rx); // duración desde el último cambio
+        handshake_tr.t_sample = $time;
         msMD_mailbox.put(handshake_tr.clone());
-        //mcMD_mailbox.put(handshake_tr.clone());
+        mcMD_mailbox.put(handshake_tr.clone());
         // Reinicia medición del dato actual
         last_data_rx = vif.md_rx_data;
         last_offset_rx = vif.md_rx_offset;
         last_size_rx = vif.md_rx_size;
         last_err_rx = vif.md_rx_err;
-        t_data_start_rx = $time;
 
       end
       // === 3) No hay cambio ni handshake ===
@@ -228,7 +222,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     last_offset = vif.md_tx_offset;
     last_size = vif.md_tx_size;
     last_err = vif.md_tx_err;
-    t_data_start = $time;
 
     forever begin
       @(posedge vif.clk);
@@ -236,41 +229,35 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       if ((vif.md_tx_data != last_data) & vif.md_tx_valid) begin
         // Cierra el "dato activo" anterior
         MD_pack2#(ALGN_DATA_WIDTH) change_tr = new();
-        change_tr.data = vif.md_tx_data;
-        change_tr.offset = vif.md_tx_offset;
-        change_tr.size = vif.md_tx_size;
-        change_tr.err = vif.md_tx_err;
-        change_tr.t_sample = t_data_start;
-        change_tr.md_t_time = ($time - t_data_start);
+        change_tr.data_out = vif.md_tx_data;
+        change_tr.ctrl_offset = vif.md_tx_offset;
+        change_tr.ctrl_size = vif.md_tx_size;
+        change_tr.t_sample = $time;
 
         // Publica duración del dato anterior
         msMD_mailbox.put(change_tr.clone());
-        //mcMD_mailbox.put(change_tr.clone());
+        mcMD_mailbox.put(change_tr.clone());
 
         // Inicia nuevo "dato activo"
         last_data = vif.md_tx_data;
         last_offset = vif.md_tx_offset;
         last_size = vif.md_tx_size;
         last_err = vif.md_tx_err;
-        t_data_start = $time;
       end
       else if (vif.md_tx_valid) begin
         MD_pack2#(ALGN_DATA_WIDTH) handshake_tr = new();
-        handshake_tr.data = vif.md_tx_data;
-        handshake_tr.offset = vif.md_tx_offset;
-        handshake_tr.size = vif.md_tx_size;
-        handshake_tr.err = vif.md_tx_err;
-        handshake_tr.t_sample = t_data_start;
-        handshake_tr.md_t_time = ($time - t_data_start); // duración desde el último cambio
+        handshake_tr.data_out = vif.md_tx_data;
+        handshake_tr.ctrl_offset = vif.md_tx_offset;
+        handshake_tr.ctrl_size = vif.md_tx_size;
+        handshake_tr.t_sample = $time; // duración desde el último cambio
         msMD_mailbox.put(handshake_tr.clone());
-        //mcMD_mailbox.put(handshake_tr.clone());
+        mcMD_mailbox.put(handshake_tr.clone());
 
         // Reinicia medición del dato actual
         last_data = vif.md_tx_data;
         last_offset = vif.md_tx_offset;
         last_size = vif.md_tx_size;
         last_err = vif.md_tx_err;
-        t_data_start = $time;
       end
       // === 3) No hay cambio ni handshake ===
       else begin
