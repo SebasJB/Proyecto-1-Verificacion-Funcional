@@ -25,7 +25,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
   //Monitores
   mailbox msMD_mailbox;  // monitor → scoreboard : MD
   mailbox msAPB_mailbox; // monitor → scoreboard : APB
-  //mailbox mcMD_mailbox; // monitor → checker : MD
+  mailbox mcMD_mailbox; // monitor → checker : MD
   //mailbox mcAPB_mailbox; // monitor → checker : APB
  
 
@@ -69,7 +69,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
     //Conexión generador y scoreboard/checker
     Generador.gsMD_mailbox  = gsMD_mailbox;
     Generador.gsAPB_mailbox = gsAPB_mailbox;
-    Generador.gcMD_mailbox  = gcMD_mailbox;
+    //Generador.gcMD_mailbox  = gcMD_mailbox;
     //Generador.gcAPB_mailbox = gcAPB_mailbox;
     Generador.tg_mailbox    = tg_mailbox;
 

@@ -89,14 +89,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   bit last_err_tx; // Último error observado
 
   function void push_rx_buffer();
-    MD_Rx_Sample #(ALGN_DATA_WIDTH) sample;
-    sample.data_in = vif.md_rx_data;
-    sample.offset = vif.md_rx_offset;
-    sample.size = vif.md_rx_size;
-    sample.err = vif.md_rx_err;
-    sample.t_sample = $time;
-    sample.bytes_left = sample.size;
-    data_in_buffer.push_back(sample);
+    
   endfunction
 
   function void push_tx_buffer();
@@ -148,8 +141,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endfunction
 
   function void send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
-    msMD_mailbox.put(trans.clone());
-    //mcMD_mailbox.put(trans.clone());
+    msMD_mailbox.put(trans.clone(trans));
+    mcMD_mailbox.put(trans.clone(trans));
   endfunction
 
   task sample_rx_data();
@@ -167,17 +160,15 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if ((vif.md_rx_data != last_data_rx) & vif.md_rx_ready) begin
         // Cierra el "dato activo" anterior
-        MD_Rx_Sample #(ALGN_DATA_WIDTH) change_tr = new();
-        change_tr.data_in = vif.md_rx_data;
-        change_tr.offset = vif.md_rx_offset;
-        change_tr.size = vif.md_rx_size;
-        change_tr.err = vif.md_rx_err;
-        change_tr.t_sample = $time;
-        change_tr.bytes_left = change_tr.size;
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) sample;
+        sample.data_in = vif.md_rx_data;
+        sample.offset = vif.md_rx_offset;
+        sample.size = vif.md_rx_size;
+        sample.err = vif.md_rx_err;
+        sample.t_sample = $time;
+        sample.bytes_left = sample.size;
+        data_in_buffer.push_back(sample);
 
-        // Publica duración del dato anterior
-        msMD_mailbox.put(change_tr.clone());
-        mcMD_mailbox.put(change_tr.clone());
 
         // Inicia nuevo "dato activo"
         last_data_rx = vif.md_rx_data;
@@ -193,8 +184,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         handshake_tr.size = vif.md_rx_size;
         handshake_tr.err = vif.md_rx_err;
         handshake_tr.t_sample = $time;
-        msMD_mailbox.put(handshake_tr.clone());
-        mcMD_mailbox.put(handshake_tr.clone());
+        handshake_tr.bytes_left = handshake_tr.size;
+        data_in_buffer.push_back(handshake_tr);
+
         // Reinicia medición del dato actual
         last_data_rx = vif.md_rx_data;
         last_offset_rx = vif.md_rx_offset;
@@ -232,10 +224,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         change_tr.ctrl_offset = vif.md_tx_offset;
         change_tr.ctrl_size = vif.md_tx_size;
         change_tr.t_sample = $time;
-
-        // Publica duración del dato anterior
-        msMD_mailbox.put(change_tr.clone());
-        mcMD_mailbox.put(change_tr.clone());
+        data_out_buffer.push_back(change_tr);
 
         // Inicia nuevo "dato activo"
         last_data_tx = vif.md_tx_data;
@@ -248,8 +237,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         handshake_tr.ctrl_offset = vif.md_tx_offset;
         handshake_tr.ctrl_size = vif.md_tx_size;
         handshake_tr.t_sample = $time; // duración desde el último cambio
-        msMD_mailbox.put(handshake_tr.clone());
-        mcMD_mailbox.put(handshake_tr.clone());
+        data_out_buffer.push_back(handshake_tr);
 
         // Reinicia medición del dato actual
         last_data_tx = vif.md_tx_data;
@@ -271,18 +259,18 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     forever begin
       wait (data_out_buffer.size() > 0);
       tx_sample = data_out_buffer.pop_front();
-      while (rx_bytes_available() < tx_sample.size) begin
+      while (rx_bytes_available() < tx_sample.ctrl_size) begin
         @(posedge vif.clk);
         tr = new();
         tr.data_out = tx_sample;
         tr.t_data_out = tx_sample.t_sample;
-        consume_rx_bytes(data_in_buffer, tr, tx_sample.size);
+        consume_rx_bytes(data_in_buffer, tr, tx_sample.ctrl_size);
         send_transaction(tr);
       end
     end
   endtask
 
-  task run_monitor();
+  task run();
     fork
       sample_rx_data();
       sample_tx_data();
