@@ -160,7 +160,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if ((vif.md_rx_data != last_data_rx) & vif.md_rx_ready) begin
         // Cierra el "dato activo" anterior
-        MD_Rx_Sample #(ALGN_DATA_WIDTH) sample;
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) sample = new();
         sample.data_in = vif.md_rx_data;
         sample.offset = vif.md_rx_offset;
         sample.size = vif.md_rx_size;
