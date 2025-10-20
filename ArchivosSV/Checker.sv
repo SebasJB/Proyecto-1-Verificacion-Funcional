@@ -72,7 +72,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
     forever begin
       mcMD_mailbox.get(pkt); // bloqueante
-      got_d = pkt.data_out
+      got_d = pkt.data_out;
       n_checked++;
       have = build_expected_one(pkt, exp);
 
