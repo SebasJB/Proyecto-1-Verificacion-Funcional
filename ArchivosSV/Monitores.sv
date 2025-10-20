@@ -143,6 +143,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
     msMD_mailbox.put(trans.clone());
     mcMD_mailbox.put(trans.clone());
+    $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes", trans.data_in.size());
   endtask
 
   task sample_rx_data();
