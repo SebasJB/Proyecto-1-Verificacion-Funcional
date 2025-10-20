@@ -67,17 +67,21 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   task run();
     MD_pack2#(W) pkt;
     md_tx_s exp;
+    bit have;
+    logic [W-1:0] got_d = pkt.data_out;
+    logic [ALGN_SIZE_WIDTH-1:0] got_sz = pkt.size_out;
+    logic [ALGN_OFFSET_WIDTH-1:0] got_off = pkt.offset_out;
 
     forever begin
       mcMD_mailbox.get(pkt); // bloqueante
       n_checked++;
-      bit have = build_expected_one(pkt, exp);
+      have = build_expected_one(pkt, exp);
 
       // Convención: si no hay suficientes bytes para formar una salida,
       // esperamos que el DUT NO haya emitido dato (o emita 0,0,0 según tu monitor).
-      logic [W-1:0]                 got_d   = pkt.data_out;
-      logic [ALGN_SIZE_WIDTH-1:0]   got_sz  = pkt.size_out;
-      logic [ALGN_OFFSET_WIDTH-1:0] got_off = pkt.offset_out;
+      got_d   = pkt.data_out;
+      got_sz  = pkt.size_out;
+      got_off = pkt.offset_out;
 
       if (!have) begin
         md_tx_s null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
