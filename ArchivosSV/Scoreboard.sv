@@ -54,7 +54,6 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
       t_in.push_back(MD_tr.t_data_in);
       t_out.push_back(MD_tr.t_data_out);
       time_trans_q.push_back(MD_tr.t_data_in - MD_tr.t_tx_sample);
-      md_t_time_q.push_back(MD_tr.md_t_time);
     end
   endtask
 
