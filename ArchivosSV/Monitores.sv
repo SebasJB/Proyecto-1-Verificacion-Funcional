@@ -73,7 +73,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
 
   MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_buffer[$]; // buffer de datos recibidos
-  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_out_buffer[$]; // buffer de datos enviados
+  MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out_buffer[$]; // buffer de datos enviados
 
 
   //Variables de ultimos valores observados rx
