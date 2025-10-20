@@ -52,7 +52,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     MD_pack2 #(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       msMD_mailbox.get(MD_tr);
-      mon_rx_data_q.push_back(MD_tr.data_in);
+      mon_rx_data_q = MD_tr.data_in;
       mon_rx_offset_q.push_back(MD_tr.offset_in);
       mon_rx_size_q.push_back(MD_tr.size_in);
       tx_data_q.push_back(MD_tr.data_out);
