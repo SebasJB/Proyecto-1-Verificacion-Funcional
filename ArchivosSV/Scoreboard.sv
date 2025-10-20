@@ -15,7 +15,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
 
   // ====== Queues de generador (MD) ======
-  bit #(ALGN_DATA_WIDTH) rx_data_q[$]; // para análisis de datos en RX
+  bit [ALGN_DATA_WIDTH-1:0] rx_data_q[$]; // para análisis de datos en RX
   bit [ALGN_OFFSET_WIDTH-1:0] rx_offset_q[$];  // para análisis de offsets en RX
   bit [ALGN_SIZE_WIDTH-1:0] rx_size_q[$]; // para análisis de tamaños en RX
   int unsigned gaps_q[$]; // para análisis de gaps en RX
