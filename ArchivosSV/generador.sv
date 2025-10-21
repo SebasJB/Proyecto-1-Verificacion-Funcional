@@ -198,7 +198,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
                     it_apb.Esc_Lec_APB    = 1'b1;      // WRITE
                     it_apb.apb_addr_valid = 1'b1;      // coherencia total 
                   //  vld                   = 1'b1;
-                    it_apb.APBdata[4:0]   = 5'h00;     // CLR
+                    it_apb.APBdata[4:0]   = 5'h100;     // CLR
                   end
                   60: begin
                     it_apb.APBaddr        = 16'h00F0;  // IRQE
