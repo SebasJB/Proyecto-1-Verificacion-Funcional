@@ -137,6 +137,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task sample_rx_data();
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) sample
     last_data_rx  = '0;
     last_offset_rx= '0;
     last_size_rx  = '0;
@@ -151,7 +152,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (change_rx) begin
           // CAPTURA una sola muestra COMPLETA
-          MD_Rx_Sample #(ALGN_DATA_WIDTH) sample = new();
+          sample = new();
           sample.data_in = vif.md_rx_data;
           sample.offset  = vif.md_rx_offset;
           sample.size    = vif.md_rx_size;
@@ -172,6 +173,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task sample_tx_data();
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
     last_data_tx  = '0;
     last_offset_tx= '0;
     last_size_tx  = '0;
@@ -183,7 +185,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       vif.md_tx_size   !== last_size_tx   ||
       vif.md_tx_err    !== last_err_tx);
       if (change_tx) begin
-        MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
+        sample = new();
         sample.data_out = vif.md_tx_data;
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
