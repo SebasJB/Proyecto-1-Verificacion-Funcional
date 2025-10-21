@@ -4,6 +4,7 @@
 // ====================================================
 typedef enum logic { APB_READ=0, APB_WRITE=1 } apb_trans_type;
 typedef enum logic [1:0] { CASO_GENERAL, ESTRES, ERRORES, APB_CFG } test_e; // Define los 4 modos en que se ejecutará la generación de estímulos:
+typedef enum int {MD_PACKED_OK, MD_PACKED_PARTIAL} md_pack_status_e;
 // ----------------------------------------------------
 
 // ============================================================================
@@ -11,7 +12,7 @@ typedef enum logic [1:0] { CASO_GENERAL, ESTRES, ERRORES, APB_CFG } test_e; // D
 // ============================================================================
 class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
 
-  // Tamaños para offset/size (idénticos al pack1 original)
+  // Tamaños para offset/size (idénticos al pack1 this)
   localparam int ALGN_OFFSET_WIDTH = 2;
   localparam int ALGN_SIZE_WIDTH   = 3;
 
@@ -24,7 +25,7 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   rand logic [ALGN_SIZE_WIDTH-1:0]   md_size;       // {0,1,2,4} codificado en 3b
   rand int unsigned                  trans_cycles;  // gap entre beats
 
-  // ---- Variables auxiliares/decisión (mismo modelo que el pack1 original) ----
+  // ---- Variables auxiliares/decisión (mismo modelo que el pack1 this) ----
   // General / estrés
   rand int md_code;           // 10*size + offset
   rand bit md_use_valid;      // 70% válidos / 30% inválidos
@@ -190,6 +191,7 @@ endclass
 // Transacción MD (lado TX del Aligner, parametrizable)
 // Usa el mismo cálculo de anchos que tu interface MD_if
 // ====================================================
+/*
 class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = 3;
@@ -223,6 +225,9 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
     return $sformatf("MD_TX data=0x%0h off=%0d size=%0d err=%0b", data, offset, size, err);
   endfunction
 endclass
+*/
+
+
 
 // ====================================================
 // APB_pack2: (capturada al completar la transferencia)
@@ -281,5 +286,66 @@ class pack3;
 
   function new(test_e m = CASO_GENERAL);   // Constructor
     mode = m;
+  endfunction
+endclass
+
+class MD_Rx_Sample #(int ALGN_DATA_WIDTH = 32);
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH = $clog2(ALGN_DATA_WIDTH/8) + 1;
+  logic [ALGN_DATA_WIDTH-1:0] data_in;
+  logic [ALGN_OFFSET_WIDTH-1:0] offset;
+  logic [ALGN_SIZE_WIDTH-1:0] size;
+  logic err;      // refleja md_rx_err
+  time t_sample; // tiempo del muestreo válido
+  int unsigned bytes_left; // bytes restantes en la transacción
+
+  function new();
+    data_in = '0;
+    offset = '0;
+    size = '0;
+    err = 0;
+    t_sample = 0;
+  endfunction
+endclass
+
+class MD_Tx_Sample #(int ALGN_DATA_WIDTH = 32);
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH = $clog2(ALGN_DATA_WIDTH/8) + 1;
+  logic [ALGN_DATA_WIDTH-1:0] data_out;
+  logic [ALGN_OFFSET_WIDTH-1:0] ctrl_offset;
+  logic [ALGN_SIZE_WIDTH-1:0] ctrl_size;
+  time t_sample; // tiempo del muestreo válido
+  function new();
+    data_out = '0;
+    ctrl_offset = '0;
+    ctrl_size = '0;
+    t_sample = 0;
+  endfunction
+endclass
+
+class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
+
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in[$]; // refleja md_rx_data que alimentaron esta TX (pueden ser varias y/o fracciones)
+  MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out; // refleja md_tx_data\
+  bit [ALGN_OFFSET_WIDTH-1:0] offset_in; // refleja md_tx_offset
+  bit [ALGN_SIZE_WIDTH-1:0]   size_in;   // refleja md_tx_size
+  bit [ALGN_OFFSET_WIDTH-1:0] offset_out; // refleja md_tx_offset
+  bit [ALGN_SIZE_WIDTH-1:0]   size_out;   // refleja md_tx_size
+  bit err;      // refleja md_tx_err
+  time t_data_in; // tiempo del primer muestreo válido
+  time t_data_out;  // tiempo del último muestreo válido
+  time t_tx_sample; // tiempo del handshake válido
+
+  function MD_pack2 #(ALGN_DATA_WIDTH) clone();
+    MD_pack2#(ALGN_DATA_WIDTH) c = new();
+    c.data_in = this.data_in;
+    c.data_out = this.data_out;
+    c.offset_out = this.offset_out;
+    c.size_out = this.size_out;
+    c.err = this.err;
+    c.t_tx_sample = this.t_tx_sample;
+    return c;
   endfunction
 endclass

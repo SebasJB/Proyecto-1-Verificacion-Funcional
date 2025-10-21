@@ -10,7 +10,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
   MD_Driver #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) MD_drv;
   Generator #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) Generador;
   Scoreboard #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) Scoreboard_ins;
-  //Checker #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) Checker_ins;
+  Checker #(.ALGN_DATA_WIDTH(ALGN_DATA_WIDTH)) Checker_inst;
   
   //Mailboxes
   //Generador
@@ -18,14 +18,14 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
   mailbox gdAPB_mailbox; // Generador → drivers : APB
   mailbox gsMD_mailbox; // Generador → scoreboard : MD
   mailbox gsAPB_mailbox; // Generador → scoreboard : APB
-  //mailbox gcMD_mailbox; // Generador → checker : MD
+  mailbox gcMD_mailbox; // Generador → checker : MD
   //mailbox gcAPB_mailbox; // Generador → checker : APB
   mailbox tg_mailbox;   // test → generator (modo)
 
   //Monitores
   mailbox msMD_mailbox;  // monitor → scoreboard : MD
   mailbox msAPB_mailbox; // monitor → scoreboard : APB
-  //mailbox mcMD_mailbox; // monitor → checker : MD
+  mailbox mcMD_mailbox; // monitor → checker : MD
   //mailbox mcAPB_mailbox; // monitor → checker : APB
  
 
@@ -40,7 +40,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
     //gcAPB_mailbox = new();
     msMD_mailbox = new(); 
     msAPB_mailbox = new();
-    //mcMD_mailbox = new(); 
+    mcMD_mailbox = new(); 
     //mcAPB_mailbox = new();
 
     tg_mailbox   = new();
@@ -50,7 +50,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
     APB_drv = new();
     Generador = new();
     Scoreboard_ins = new(); 
-    //checker_inst = new();
+    Checker_inst = new();
     MD_mon = new();
     APB_mon = new();
 
@@ -75,7 +75,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
 
     //Cponexión monitores y scoreboard/checker
     MD_mon.msMD_mailbox= msMD_mailbox;  // monitor → scoreboard (MD)
-    //MD_mon.mcMD_mailbox = mcMD_mailbox;  // monitor → checker   (MD)
+    MD_mon.mcMD_mailbox = mcMD_mailbox;  // monitor → checker   (MD)
     APB_mon.msAPB_mailbox= msAPB_mailbox; // monitor → scoreboard (APB)
     //APB_mon.mcAPB_mailbox = mcAPB_mailbox; // monitor → checker   (APB)
 
@@ -87,10 +87,10 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
     //Scoreboard_ins.test_sb_mbx= ts_mailbox;
 
     //Checker
-    //checker_inst.gcMD_mailbox = gcMD_mailbox;
-    //checker_inst.gcAPB_mailbox = gcAPB_mailbox;
-    //checker_inst.mcMD_mailbox = mcMD_mailbox;
-    //checker_inst.mcAPB_mailbox = mcAPB_mailbox;
+    //Checker_inst.gcMD_mailbox = gcMD_mailbox;
+    //Checker_inst.gcAPB_mailbox = gcAPB_mailbox;
+    Checker_inst.mcMD_mailbox = mcMD_mailbox;
+    //Checker_inst.mcAPB_mailbox = mcAPB_mailbox;
 
   endfunction
 
@@ -102,7 +102,7 @@ class Ambiente #(parameter int ALGN_DATA_WIDTH = 32);
       APB_drv.run();
       Generador.run();
       Scoreboard_ins.run();
-      //checker_inst.run();
+      Checker_inst.run();
       MD_mon.run();
       APB_mon.run();
     join_none

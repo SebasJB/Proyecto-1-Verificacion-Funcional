@@ -64,28 +64,230 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Mailboxes con los nombres exactos solicitados
   mailbox msMD_mailbox; // Monitor → scoreboard: MD transactions
-  //mailbox mcMD_mailbox; // Monitor → checker: MD transactions
+  mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Estado para detectar cambios y medir tiempos
 
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
-  bit [ALGN_DATA_WIDTH-1:0]   last_data; // Último dato observado
-  bit [ALGN_OFFSET_WIDTH-1:0] last_offset; // Último offset observado
-  bit [ALGN_SIZE_WIDTH-1:0]   last_size; // Último tamaño observado
-  bit last_err; // Último error observado
-  time t_data_start; // inicio del "dato activo" actual
 
-  function new();
-    last_data = '0; // fuerza primer "cambio" al inicio
-    last_offset = '0;
-    last_size = '0;
-    last_err = '0;
-    t_data_start = 0;
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_buffer[$]; // buffer de datos recibidos
+  MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out_buffer[$]; // buffer de datos enviados
+
+
+  //Variables de ultimos valores observados rx
+  bit [ALGN_DATA_WIDTH-1:0]   last_data_rx; // Último dato observado
+  bit [ALGN_OFFSET_WIDTH-1:0] last_offset_rx; // Último offset observado
+  bit [ALGN_SIZE_WIDTH-1:0]   last_size_rx; // Último tamaño observado
+  bit last_err_rx; // Último error observado
+
+  //Variables de ultimos valores observados tx
+  bit [ALGN_DATA_WIDTH-1:0]   last_data_tx; // Último dato observado
+  bit [ALGN_OFFSET_WIDTH-1:0] last_offset_tx; // Último offset observado
+  bit [ALGN_SIZE_WIDTH-1:0]   last_size_tx; // Último tamaño observado
+  bit last_err_tx; // Último error observado
+
+  function void push_rx_buffer();
+    
   endfunction
 
+  function void push_tx_buffer();
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
+    sample.data_out = vif.md_tx_data;
+    sample.ctrl_offset = vif.md_tx_offset;
+    sample.ctrl_size = vif.md_tx_size;
+    sample.t_sample = $time;
+    data_out_buffer.push_back(sample);
+  endfunction
+
+  function int unsigned rx_bytes_available();
+    int unsigned total = 0;
+    foreach (data_in_buffer[i]) begin
+      total += data_in_buffer[i].bytes_left;
+    end
+    return total;
+  endfunction
+
+  function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], ref MD_pack2 #(ALGN_DATA_WIDTH) trans, int unsigned num_bytes);
+    int unsigned bytes_to_consume = num_bytes;
+    bit num_err = 0;
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) current_sample;
+    int unsigned sample_bytes;
+    while (bytes_to_consume > 0) begin
+      if (rx_fifo.size() == 0) begin
+        $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", num_bytes);
+      end     
+      current_sample = rx_fifo[0];
+      sample_bytes = (bytes_to_consume <= current_sample.bytes_left) ? bytes_to_consume : current_sample.bytes_left;
+      if (current_sample.bytes_left == 0) begin
+        rx_fifo.pop_front();
+        continue;
+      end
+
+      num_err |= current_sample.err;
+      trans.data_in.push_back(current_sample);
+      bytes_to_consume -= sample_bytes;
+      current_sample.bytes_left -= sample_bytes;
+
+      //Mantener la coherencia de la cola
+      if (current_sample.bytes_left == 0) begin
+        rx_fifo.pop_front();
+      end else begin
+        rx_fifo[0] = current_sample;
+      end
+    end
+    trans.err = num_err;
+  endfunction
+
+  task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
+    msMD_mailbox.put(trans.clone());
+    mcMD_mailbox.put(trans.clone());
+    $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes", trans.data_in.size());
+  endtask
+
+  task sample_rx_data();
+     @(posedge vif.clk);
+    // Inicializa referencia del primer dato observado
+    last_data_rx = vif.md_rx_data;
+    last_offset_rx = vif.md_rx_offset;
+    last_size_rx = vif.md_rx_size;
+    last_err_rx = vif.md_rx_err;
+
+    forever begin
+      @(posedge vif.clk);
+      // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
+
+
+      if ((vif.md_rx_data != last_data_rx) & vif.md_rx_ready) begin
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) sample = new();
+
+        $display("[MD_MON] Cambio de dato RX detectado");
+        sample.data_in = vif.md_rx_data;
+        sample.offset = vif.md_rx_offset;
+        sample.size = vif.md_rx_size;
+        sample.err = vif.md_rx_err;
+        sample.t_sample = $time;
+        sample.bytes_left = sample.size;
+        data_in_buffer.push_back(sample);
+
+
+        // Inicia nuevo "dato activo"
+        last_data_rx = vif.md_rx_data;
+        last_offset_rx = vif.md_rx_offset;
+        last_size_rx = vif.md_rx_size;
+        last_err_rx = vif.md_rx_err;
+      end
+
+      else if (vif.md_rx_ready) begin
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
+        $display("[MD_MON] Handshake RX detectado");
+        handshake_tr.data_in = vif.md_rx_data;
+        handshake_tr.offset = vif.md_rx_offset;
+        handshake_tr.size = vif.md_rx_size;
+        handshake_tr.err = vif.md_rx_err;
+        handshake_tr.t_sample = $time;
+        handshake_tr.bytes_left = handshake_tr.size;
+        data_in_buffer.push_back(handshake_tr);
+
+        // Reinicia medición del dato actual
+        last_data_rx = vif.md_rx_data;
+        last_offset_rx = vif.md_rx_offset;
+        last_size_rx = vif.md_rx_size;
+        last_err_rx = vif.md_rx_err;
+
+      end
+      // === 3) No hay cambio ni handshake ===
+    
+
+      else begin
+        // Se mantiene actualizados offset/size/err (por si varían sin cambio de data)
+        last_offset_rx = vif.md_rx_offset;
+        last_size_rx = vif.md_rx_size;
+        last_err_rx = vif.md_rx_err;
+      end
+    end
+  endtask
+
+  task sample_tx_data();
+    vif.md_tx_ready = 1'b1; // Siempre listo para enviar
+     @(posedge vif.clk);
+    // Inicializa referencia del primer dato observado
+    last_data_tx = vif.md_tx_data;
+    last_offset_tx = vif.md_tx_offset;
+    last_size_tx = vif.md_tx_size;
+
+    forever begin
+      @(posedge vif.clk);
+      // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
+      if ((vif.md_tx_data != last_data_tx) & vif.md_tx_valid) begin
+        // Cierra el "dato activo" anterior
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) change_tr = new();
+        $display("[MD_MON] Cambio de dato TX detectado");
+        change_tr.data_out = vif.md_tx_data;
+        change_tr.ctrl_offset = vif.md_tx_offset;
+        change_tr.ctrl_size = vif.md_tx_size;
+        change_tr.t_sample = $time;
+        data_out_buffer.push_back(change_tr);
+
+        // Inicia nuevo "dato activo"
+        last_data_tx = vif.md_tx_data;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx = vif.md_tx_size;
+      end
+      else if (vif.md_tx_valid) begin
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) handshake_tr = new();
+        $display("[MD_MON] Handshake TX detectado");
+        handshake_tr.data_out = vif.md_tx_data;
+        handshake_tr.ctrl_offset = vif.md_tx_offset;
+        handshake_tr.ctrl_size = vif.md_tx_size;
+        handshake_tr.t_sample = $time; // duración desde el último cambio
+        data_out_buffer.push_back(handshake_tr);
+
+        // Reinicia medición del dato actual
+        last_data_tx = vif.md_tx_data;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx = vif.md_tx_size;
+      end
+      // === 3) No hay cambio ni handshake ===
+      else begin
+        // Se mantiene actualizados offset/size/err (por si varían sin cambio de data)
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx = vif.md_tx_size;
+      end
+    end
+  endtask
+
+  task aligner();
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample;
+    MD_pack2 #(ALGN_DATA_WIDTH) tr;
+    int unsigned bytes;
+    forever begin
+      wait (data_out_buffer.size() > 0);
+      tx_sample = data_out_buffer.pop_front();
+      while (rx_bytes_available() < tx_sample.ctrl_size) begin
+        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes", tx_sample.ctrl_size);
+        @(posedge vif.clk);
+        tr = new();
+        tr.data_out = tx_sample;
+        tr.t_data_out = tx_sample.t_sample;
+        bytes = tx_sample.ctrl_size;
+        consume_rx_bytes(data_in_buffer, tr, bytes);
+        send_transaction(tr);
+      end
+    end
+  endtask
+
   task run();
+    fork
+      sample_rx_data();
+      sample_tx_data();
+      aligner();
+    join_none
+  endtask
+
+
+  /*task run();
     // Política de aceptar siempre
     vif.md_tx_ready = 1'b1;
 
@@ -153,5 +355,5 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         last_err = vif.md_tx_err;
       end
     end
-  endtask
+  endtask*/
 endclass

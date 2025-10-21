@@ -7,7 +7,7 @@
 class Generator #(parameter int ALGN_DATA_WIDTH = 32);
 
 
-  // Mailboxes hacia drivers / scoreboard / checker y TEST->GENERATOR
+  // Mailboxes hacia drivers / scoreboard y TEST->GENERATOR
 mailbox gdMD_mailbox; //Generador -> drivers : MD
 mailbox gsMD_mailbox; //Generador -> scoreboard : MD
 mailbox gdAPB_mailbox; //Generador -> drivers : APB
