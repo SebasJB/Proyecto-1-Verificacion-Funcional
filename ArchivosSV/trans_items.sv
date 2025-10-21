@@ -317,7 +317,6 @@ class MD_Rx_Sample #(int ALGN_DATA_WIDTH = 32);
   logic [ALGN_SIZE_WIDTH-1:0] size;
   logic err;      // refleja md_rx_err
   time t_sample; // tiempo del muestreo válido
-  int unsigned bytes_left; // bytes restantes en la transacción
 
   function new();
     data_in = '0;
@@ -348,12 +347,7 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
   MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in[$]; // refleja md_rx_data que alimentaron esta TX (pueden ser varias y/o fracciones)
-  MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out; // refleja md_tx_data\
-  bit [ALGN_OFFSET_WIDTH-1:0] offset_in; // refleja md_tx_offset
-  bit [ALGN_SIZE_WIDTH-1:0]   size_in;   // refleja md_tx_size
-  bit [ALGN_OFFSET_WIDTH-1:0] offset_out; // refleja md_tx_offset
-  bit [ALGN_SIZE_WIDTH-1:0]   size_out;   // refleja md_tx_size
-  bit err;      // refleja md_tx_err
+  MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out[$]; // refleja md_tx_data que generaron esta TX (pueden ser varias y/o fracciones)
   time t_data_in; // tiempo del primer muestreo válido
   time t_data_out;  // tiempo del último muestreo válido
   time t_tx_sample; // tiempo del handshake válido
