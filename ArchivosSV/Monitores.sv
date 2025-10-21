@@ -98,7 +98,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
 
 
-  
+  /*
   function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], MD_pack2 #(ALGN_DATA_WIDTH) trans);
     int unsigned bytes_to_consume = rx_bytes_available();
     bit num_err = 0;
@@ -127,7 +127,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         rx_fifo[0] = current_sample;
       end
     end
-  endfunction 
+  endfunction */
 
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
     msMD_mailbox.put(trans.clone());
@@ -210,7 +210,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     end
   endtask
 
-/*
+
   task aligner();
     MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample;
     MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_sample;
@@ -232,6 +232,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_out[i] = data_out_buffer.pop_front();
         end
         @(posedge vif.clk);
+        $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d)", tr.size_out, tr.data_out.data_out, tr.data_in.size());
+         foreach (tr.data_in[i]) begin
+          $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
+          end
+
         send_transaction(tr);
         rx_bytes_count = 0;
         tx_bytes_count = 0;
@@ -247,62 +252,17 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_in[i] = data_in_buffer.pop_front();
         end
         @(posedge vif.clk);
+        $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d)", tr.size_out, tr.data_out.data_out, tr.data_in.size());
+         foreach (tr.data_in[i]) begin
+          $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
+          end
         send_transaction(tr);
         rx_bytes_count = 0;
         tx_bytes_count = 0;
       end
     end
   endtask
-*/
-function int unsigned rx_bytes_available();
-  int unsigned acc = 0;
-    foreach (data_in_buffer[i]) acc += data_in_buffer[i].size; 
-  return acc;
-endfunction
 
-task aligner();
-  MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample;
-  MD_pack2    #(ALGN_DATA_WIDTH) tr;
-  int unsigned need;
-
-  forever begin
-    // Espera una TX disponible
-    if (data_out_buffer.size() == 0) @ev_tx_pushed;
-
-    // Toma una TX atómicamente
-    sem_buf.get();
-      if (data_out_buffer.size() == 0) begin
-        sem_buf.put();
-        continue;
-      end
-      tx_sample = data_out_buffer.pop_front();
-    sem_buf.put();
-
-    need = tx_sample.ctrl_size; // bytes que exige esta salida del DUT
-    // Espera hasta tener suficientes bytes de RX
-    if (rx_bytes_available() < need) begin
-      do @ev_rx_pushed; while (rx_bytes_available() < need);
-    end
-
-    // Construir paquete (consumir EXACTAMENTE 'need' bytes)
-    tr = new();
-    tr.data_out[0] = tx_sample;
-    sem_buf.get();
-      consume_rx_bytes(data_in_buffer, tr); // tu versión que agrega a tr.data_in[$]
-    sem_buf.put();
-
-    //tr.data_in = (need > 0) ? tr.data_in : null;
-
-    // DEBUG útil
-    $display("[MD_MON] Enviado MD -> TX(size=%0d,data=%h) RX(samples=%0d,bytes=%0d)",
-             tx_sample.ctrl_size, tx_sample.data_out, tr.data_in.size(), need);
-    foreach (tr.data_in[i]) begin
-      $display("  [RX%0d] data=%h off=%0d size=%0d t=%0t",
-               i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size, tr.data_in[i].t_sample);
-    end
-    send_transaction(tr);
-  end
-endtask
 
   task run();
     fork
