@@ -109,9 +109,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", num_bytes);
       end     
       current_sample = rx_fifo[0];
-      sample_bytes = (bytes_to_consume <= current_sample.bytes_left) ? bytes_to_consume : current_sample.bytes_left;
-      $display("[MD_MON] Consumiendo %0d bytes del sample con %0d bytes restantes", sample_bytes, current_sample.bytes_left);
-      if (current_sample.bytes_left == 0) begin
+      sample_bytes = (bytes_to_consume <= current_sample.size) ? bytes_to_consume : current_sample.size;
+      $display("[MD_MON] Consumiendo %0d bytes del sample con %0d bytes restantes", sample_bytes, current_sample.size);
+      if (bytes_to_consume == 0) begin
         rx_fifo.pop_front();
         continue;
       end
@@ -119,10 +119,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       num_err |= current_sample.err;
       trans.data_in.push_back(current_sample);
       bytes_to_consume -= sample_bytes;
-      current_sample.bytes_left -= sample_bytes;
 
       //Mantener la coherencia de la cola
-      if (current_sample.bytes_left == 0) begin
+      if (bytes_to_consume == 0) begin
         rx_fifo.pop_front();
       end else begin
         rx_fifo[0] = current_sample;
