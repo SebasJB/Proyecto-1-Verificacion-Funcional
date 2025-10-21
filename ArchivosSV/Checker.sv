@@ -72,14 +72,14 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
     forever begin
       mcMD_mailbox.get(pkt); // bloqueante
+      got_d = new();
       $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       n_checked++;
       have = build_expected_one(pkt, exp);
 
       // Convención: si no hay suficientes bytes para formar una salida,
       // esperamos que el DUT NO haya emitido dato (o emita 0,0,0 según tu monitor).
-      got_d = new();
-      got_d   = pkt.data_out[0];
+      got_d = pkt.data_out[0];
       got_sz  = got_d.ctrl_size;
       CTRL_SIZE = got_sz;
       got_off = got_d.ctrl_offset;
