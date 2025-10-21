@@ -35,6 +35,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     byte       byte_stream[$];
     md_rx_s    rx_s;
     exp_one = '{default:0};
+    int need;
 
     // 1) Aplanar entradas válidas del paquete a BYTES (orden de llegada)
     foreach (pkt.data_in[i]) begin
@@ -46,7 +47,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   end
 
   // 2) Tamaño requerido = el que mostró el DUT (pkt.size_out)
-  int need = pkt.size_out;
+  need = pkt.data_out[0].ctrl_size;
 
   // DEBUG: imprimir flujo de bytes disponible
   $write("[CHK] byte_stream(size=%0d) = [", byte_stream.size());
