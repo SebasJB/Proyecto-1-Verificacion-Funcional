@@ -72,7 +72,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         $display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",
         $time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
 
-        wait (vif.md_rx_ready === 1'b1);    // se libera en el MISMO ciclo si ready 
+        wait (vif.md_rx_ready === 1'b1);    // Espera ready del DUT 
         $display("[%0t] MD_DRV  ready=1 err=%0b", $time, vif.md_rx_err);
         // Un ciclo después de ready=1, soltar líneas a 0
         @(posedge vif.clk);
@@ -141,7 +141,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.penable = 1'b1;
         // Si PREADY se pone en 1 en este mismo ciclo (0 wait), este wait termina de inmediato.
         // Si no, esperará hasta el ciclo en que PREADY suba.
-        wait (vif.pready === 1'b1);
+        wait (vif.pready === 1'b1);  
         // Si es lectura, tomar datos ahora (ciclo de PREADY)
         if (!item.Esc_Lec_APB) begin
           $display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b",
