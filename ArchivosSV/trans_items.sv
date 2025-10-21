@@ -278,8 +278,8 @@ class pack3;
   rand int    len_n_apb;
 
   constraint c_len {
-    if (mode==CASO_GENERAL) { len_n_md inside {[600:1000]}; len_n_apb inside {[150:250]}; }
-    if (mode==ESTRES)       { len_n_md inside {[600:900]};  len_n_apb inside {[200:400]}; }
+    if (mode==CASO_GENERAL) { len_n_md inside {[600:1000]}; len_n_apb inside {[200:300]}; }
+    if (mode==ESTRES)       { len_n_md inside {[600:900]};  len_n_apb inside {[250:450]}; }
     if (mode==APB_CFG)      { len_n_md inside {[500:1000]}; len_n_apb inside {[300:600]}; }
     if (mode==ERRORES)      { len_n_md == 600;              len_n_apb == 600; }
   }
