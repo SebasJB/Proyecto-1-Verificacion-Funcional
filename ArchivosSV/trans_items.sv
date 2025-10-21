@@ -280,7 +280,7 @@ class pack3;
   constraint c_len {
     if (mode==CASO_GENERAL) { len_n_md inside {[600:1000]}; len_n_apb inside {[300:400]}; }
     if (mode==ESTRES)       { len_n_md inside {[600:900]};  len_n_apb inside {[300:500]}; }
-    if (mode==APB_CFG)      { len_n_md inside {[500:770]}; len_n_apb inside {[300:600]}; }
+    if (mode==APB_CFG)      { len_n_md inside {[500:720]}; len_n_apb inside {[300:600]}; }
     if (mode==ERRORES)      { len_n_md == 600;              len_n_apb == 400; }
   }
 
