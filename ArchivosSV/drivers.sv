@@ -145,8 +145,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
           //$display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b", $time, item.APBaddr, vif.prdata, vif.pslverr);
         end else begin
           // LOG write complete
-          //$display("[%0t] APB_DRV WRITE  addr=0x%0h data=0x%0h err=%0b",
-                   $time, item.APBaddr, item.APBdata, vif.pslverr);
+          //$display("[%0t] APB_DRV WRITE  addr=0x%0h data=0x%0h err=%0b", $time, item.APBaddr, item.APBdata, vif.pslverr);
         end
         // Flanco inmediatamente POSTERIOR al flanco que tuvo PREADY=1 -> bajar
         @(posedge vif.clk);
