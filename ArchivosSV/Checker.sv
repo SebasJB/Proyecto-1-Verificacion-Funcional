@@ -72,7 +72,6 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     logic [ALGN_OFFSET_WIDTH-1:0] got_off;
 
     forever begin
-      $display("[CHK] mailbox=%p", mcMD_mailbox);
       mcMD_mailbox.get(pkt);
       $display("[CHK] pkt=%p", pkt);
       got_d = new();

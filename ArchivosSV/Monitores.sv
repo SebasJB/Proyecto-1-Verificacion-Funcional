@@ -233,7 +233,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_out[i] = data_out_buffer.pop_front();
         end
         @(posedge vif.clk);
-        $display("[MON] pkt=%p", tr);
         send_transaction(tr);
         rx_bytes_count = 0;
         tx_bytes_count = 0;
@@ -249,7 +248,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_in[i] = data_in_buffer.pop_front();
         end
         @(posedge vif.clk);
-        $display("[MON] pkt=%p", tr);
         send_transaction(tr);
         rx_bytes_count = 0;
         tx_bytes_count = 0;
