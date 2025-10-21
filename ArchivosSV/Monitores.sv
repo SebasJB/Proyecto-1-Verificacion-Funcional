@@ -219,7 +219,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_out[i] = data_out_buffer[i];
         end
         @(posedge vif.clk);
-        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data out", tx_sample[].ctrl_size, tx_sample.data_out);
+        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data in", data_in_buffer[0].size, data_in_buffer[0].data_in);
         send_transaction(tr);
       end
 
@@ -231,7 +231,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_in[i] = data_in_buffer[i];
         end
         @(posedge vif.clk);
-        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data out", tx_sample[].ctrl_size, tx_sample.data_out);
+        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data out", tx_sample.ctrl_size, tx_sample.data_out);
         send_transaction(tr);
       end
     end
