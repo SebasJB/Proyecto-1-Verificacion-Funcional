@@ -56,13 +56,13 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
         mon_rx_data_q.push_back(MD_tr.data_in[i]);
         mon_rx_offset_q.push_back(MD_tr.data_in[i].offset);
         mon_rx_size_q.push_back(MD_tr.data_in[i].size);
-        err_q.push_back(MD_tr.data_out[i].err);
+        err_q.push_back(MD_tr.data_in[i].err);
         t_in.push_back(MD_tr.data_in[i].t_sample);
       end
       foreach (MD_tr.data_out[i]) begin
         tx_data_q.push_back(MD_tr.data_out[i]);
-        tx_offset_q.push_back(MD_tr.data_out[i].offset);
-        tx_size_q.push_back(MD_tr.data_out[i].size);
+        tx_offset_q.push_back(MD_tr.data_out[i].ctrl_offset);
+        tx_size_q.push_back(MD_tr.data_out[i].ctrl_size);
         t_out.push_back(MD_tr.data_out[i].t_sample);
       end
     end
