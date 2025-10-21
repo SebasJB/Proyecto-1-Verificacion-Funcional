@@ -75,7 +75,6 @@ class Checker #(int W = ALGN_DATA_WIDTH);
       mcMD_mailbox.get(pkt);
       $display("[CHK] pkt=%p", pkt);
       got_d = new();
-      exp = new();
       $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       n_checked++;
       have = build_expected_one(pkt, exp);
