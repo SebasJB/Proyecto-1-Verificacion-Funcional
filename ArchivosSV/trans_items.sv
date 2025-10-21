@@ -157,8 +157,8 @@ class APB_pack1;
   }
 
   // Gaps APB por modo
-  constraint c_apb_conf_gen    { if (mode==CASO_GENERAL || mode==APB_CFG || mode==ERRORES) conf_cycles inside {[1:10]}; }
-  constraint c_apb_conf_stress { if (mode==ESTRES)                                         conf_cycles inside {[1:4]}; }
+  constraint c_apb_conf_gen    { if (mode==CASO_GENERAL || mode==APB_CFG || mode==ERRORES) conf_cycles inside {[1:5]}; }
+  constraint c_apb_conf_stress { if (mode==ESTRES)                                         conf_cycles inside {[1:2]}; }
 
   // ========================= post_randomize (APB) =========================
   // Inserta SIZE (bits [2:0]) y OFFSET (bits [9:8]) en APBdata
