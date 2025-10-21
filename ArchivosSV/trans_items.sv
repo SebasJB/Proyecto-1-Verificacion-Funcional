@@ -107,15 +107,12 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   covergroup cg_md @(md_cov_ev); option.per_instance=1;
     cp_sz : coverpoint md_size   { bins s0={0}; bins s1={1}; bins s2={2}; bins s4={4}; bins other=default; }
     cp_of : coverpoint md_offset { bins o[]={[0:(1<<ALGN_OFFSET_WIDTH)-1]}; }
-    cp_v  : coverpoint ((md_size!=0)&&(((BYTES+md_offset)%md_size)==0)) { bins ok={1}; bins bad={0}; }
+    cp_v : coverpoint ( (md_size!=0) && ((int'(BYTES+md_offset) % int'(md_size))==0) ) { bins ok={1}; bins bad={0}; }
     x_sz_of: cross cp_sz,cp_of;
   endgroup
-  cg_md_t cg_md;    
-  function new(); 
-    cg_md=new(); 
-  endfunction
-  // Al final de tu post_randomize():
-  // -> md_cov_ev;
+
+  cg_md cg_md;          
+  function new(); cg_md = new(); endfunction
 
 endclass
 
@@ -211,11 +208,8 @@ class APB_pack1;
     cp_ao : coverpoint apb_off_aux  { bins o[]={[0:3]}; }
     x_dir_wr: cross cp_dir, cp_wr;
   endgroup : cg_apb_t
-  cg_apb_t cg_apb;                    // handle
-  function new(); 
-  cg_apb = new(); 
-  endfunction
-  // En tu post_randomize() existente, al final:  -> apb_cov_ev;
+  cg_md_t cg_md;
+  function new(); cg_md = new(); endfunction
 
 endclass
 
