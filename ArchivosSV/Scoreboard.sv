@@ -52,16 +52,19 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     MD_pack2 #(ALGN_DATA_WIDTH) MD_tr;
     forever begin
       msMD_mailbox.get(MD_tr);
-      mon_rx_data_q = MD_tr.data_in;
-      mon_rx_offset_q.push_back(MD_tr.data_in.offset);
-      mon_rx_size_q.push_back(MD_tr.data_in.size);
-      tx_data_q.push_back(MD_tr.data_out);
-      tx_offset_q.push_back(MD_tr.data_out.offset);
-      tx_size_q.push_back(MD_tr.data_out.size);
-      err_q.push_back(MD_tr.data_out.err);
-      t_in.push_back(MD_tr.data_in.t_sample);
-      t_out.push_back(MD_tr.data_out.t_sample);
-      time_trans_q.push_back(MD_tr.data_in.t_sample - MD_tr.data_out.t_sample);
+      foreach (MD_tr.data_in[i]) begin
+        mon_rx_data_q.push_back(MD_tr.data_in[i]);
+        mon_rx_offset_q.push_back(MD_tr.data_in[i].offset);
+        mon_rx_size_q.push_back(MD_tr.data_in[i].size);
+        err_q.push_back(MD_tr.data_out[i].err);
+        t_in.push_back(MD_tr.data_in[i].t_sample);
+      end
+      foreach (MD_tr.data_out[i]) begin
+        tx_data_q.push_back(MD_tr.data_out[i]);
+        tx_offset_q.push_back(MD_tr.data_out[i].offset);
+        tx_size_q.push_back(MD_tr.data_out[i].size);
+        t_out.push_back(MD_tr.data_out[i].t_sample);
+      end
     end
   endtask
 

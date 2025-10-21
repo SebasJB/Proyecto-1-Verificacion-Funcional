@@ -66,7 +66,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   mailbox msMD_mailbox; // Monitor → scoreboard: MD transactions
   mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
-  // Estado para detectar cambios y medir tiempos
+  // Mutex para proteger acceso a las colas
+  semaphore sem_buf = new(1);
 
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
@@ -156,8 +157,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sample.size    = vif.md_rx_size;
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
-          rx_bytes_count += sample.size;
+          sem_buf.get();
           data_in_buffer.push_back(sample);
+          rx_bytes_count += sample.size;
+          sem_buf.put();
+          
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
           last_offset_rx = vif.md_rx_offset;
@@ -184,8 +188,12 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
+
+        sem_buf.get();
         data_out_buffer.push_back(sample);
         tx_bytes_count += sample.ctrl_size;
+        sem_buf.put();
+        
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
         last_offset_tx = vif.md_tx_offset;
@@ -202,14 +210,28 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     forever begin
       wait (data_out_buffer.size() > 0);
       tx_sample = data_out_buffer.pop_front();
-      while (rx_bytes_available() < tx_sample.ctrl_size) begin
-        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data out", tx_sample.ctrl_size, tx_sample.data_out);
+      if (data_in_buffer[0].size > tx_sample.ctrl_size) begin
+        wait (tx_bytes_count == data_in_buffer[0].size);
+        
+        tr.data_in[0] = data_in_buffer[0];
+        tr.data_out[0] = tx_sample;
+        foreach (data_out_buffer[i]) begin
+          tr.data_out[i] = data_out_buffer[i];
+        end
         @(posedge vif.clk);
-        tr = new();
-        tr.data_out = tx_sample;
-        tr.t_data_out = tx_sample.t_sample;
-        bytes = tx_sample.ctrl_size;
-        //consume_rx_bytes(data_in_buffer, tr, bytes);
+        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data out", tx_sample[].ctrl_size, tx_sample.data_out);
+        send_transaction(tr);
+      end
+
+      else begin
+        wait (rx_bytes_count == tx_sample.ctrl_size);
+        tr.data_in[0] = data_in_buffer[0];
+        tr.data_out[0] = tx_sample;
+        foreach (data_in_buffer[i]) begin
+          tr.data_in[i] = data_in_buffer[i];
+        end
+        @(posedge vif.clk);
+        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d data out", tx_sample[].ctrl_size, tx_sample.data_out);
         send_transaction(tr);
       end
     end
