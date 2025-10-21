@@ -293,7 +293,7 @@ task aligner();
       consume_rx_bytes(data_in_buffer, tr); // tu versión que agrega a tr.data_in[$]
     sem_buf.put();
 
-    tr.data_in = (tr.data_in[0].size() > 0) ? tr.data_in[0].t_sample : 0;
+    tr.data_in = (tr.data_in[0].size() > 0) ? tr.data_in[0] : 0;
 
     // DEBUG útil
     $display("[MD_MON] Enviado MD -> TX(size=%0d,data=%h) RX(samples=%0d,bytes=%0d)",
