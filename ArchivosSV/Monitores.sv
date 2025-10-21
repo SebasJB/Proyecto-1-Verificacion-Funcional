@@ -256,9 +256,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 */
 function int unsigned rx_bytes_available();
   int unsigned acc = 0;
-  sem_buf.get();
     foreach (data_in_buffer[i]) acc += data_in_buffer[i].size; 
-  sem_buf.put();
   return acc;
 endfunction
 
@@ -293,7 +291,7 @@ task aligner();
       consume_rx_bytes(data_in_buffer, tr); // tu versión que agrega a tr.data_in[$]
     sem_buf.put();
 
-    tr.data_in = (tr.data_in.size() > 0) ? tr.data_in[0] : 0;
+    tr.data_in = (need > 0) ? tr.data_in[0] : 0;
 
     // DEBUG útil
     $display("[MD_MON] Enviado MD -> TX(size=%0d,data=%h) RX(samples=%0d,bytes=%0d)",
