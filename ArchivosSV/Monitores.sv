@@ -148,7 +148,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     last_err_rx   = '0;
     forever begin
       @(posedge vif.clk);
-      bit change_rx = vif.md_rx_valid &&
+      change_rx = vif.md_rx_valid &&
            (vif.md_rx_data   !== last_data_rx   ||
             vif.md_rx_offset !== last_offset_rx ||
             vif.md_rx_size   !== last_size_rx   ||
@@ -179,7 +179,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     last_size_tx  = '0;
     forever begin
       @(posedge vif.clk);
-      bit change_tx = vif.md_tx_valid &&
+      change_tx = vif.md_tx_valid &&
       (vif.md_tx_data   !== last_data_tx  ||
       vif.md_tx_offset !== last_offset_tx ||
       vif.md_tx_size   !== last_size_tx   ||
