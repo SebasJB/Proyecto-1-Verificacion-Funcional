@@ -109,7 +109,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     return total;
   endfunction
 
-  function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], ref MD_pack2 #(ALGN_DATA_WIDTH) trans, int unsigned num_bytes);
+  function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], MD_pack2 #(ALGN_DATA_WIDTH) trans, int unsigned num_bytes);
     int unsigned bytes_to_consume = num_bytes;
     bit num_err = 0;
     MD_Rx_Sample #(ALGN_DATA_WIDTH) current_sample;
@@ -120,6 +120,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end     
       current_sample = rx_fifo[0];
       sample_bytes = (bytes_to_consume <= current_sample.bytes_left) ? bytes_to_consume : current_sample.bytes_left;
+      $display("[MD_MON] Consumiendo %0d bytes del sample con %0d bytes restantes", sample_bytes, current_sample.bytes_left);
       if (current_sample.bytes_left == 0) begin
         rx_fifo.pop_front();
         continue;
@@ -266,7 +267,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       wait (data_out_buffer.size() > 0);
       tx_sample = data_out_buffer.pop_front();
       while (rx_bytes_available() < tx_sample.ctrl_size) begin
-        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes", tx_sample.ctrl_size);
+        $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes, %0d bytes restantes", tx_sample.ctrl_size, );
         @(posedge vif.clk);
         tr = new();
         tr.data_out = tx_sample;
