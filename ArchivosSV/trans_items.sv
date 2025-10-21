@@ -107,11 +107,9 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   covergroup cg_md @(md_cov_ev); option.per_instance=1;
     cp_sz : coverpoint md_size   { bins s0={0}; bins s1={1}; bins s2={2}; bins s4={4}; bins other=default; }
     cp_of : coverpoint md_offset { bins o[]={[0:(1<<ALGN_OFFSET_WIDTH)-1]}; }
-    cp_v : coverpoint ( (md_size!=0) && ((int'(BYTES+md_offset) % int'(md_size))==0) ) { bins ok={1}; bins bad={0}; }
-    x_sz_of: cross cp_sz,cp_of;
+    cp_v  : coverpoint ((md_size!=0) && ((int'(BYTES+md_offset) % int'(md_size))==0)) { bins ok={1}; bins bad={0}; }
+    x_sz_of: cross cp_sz, cp_of;
   endgroup
-
-  cg_md cg_md;          
   function new(); cg_md = new(); endfunction
 
 endclass
@@ -200,16 +198,15 @@ class APB_pack1;
       apb_size_aux, apb_off_aux, apb_addr_valid);
   endfunction
 
-  covergroup cg_apb_t @(apb_cov_ev); option.per_instance=1;
+  covergroup cg_apb @(apb_cov_ev); option.per_instance=1;
     cp_dir: coverpoint APBaddr { bins CTRL={16'h0000}; bins STAT={16'h000C}; bins IRQE={16'h00F0}; bins IRQ={16'h00F4}; bins OTH=default; }
     cp_wr : coverpoint Esc_Lec_APB { bins RD={0}; bins WR={1}; }
     cp_vld: coverpoint (APBaddr inside {16'h0000,16'h000C,16'h00F0,16'h00F4}) { bins V={1}; bins IV={0}; }
     cp_as : coverpoint apb_size_aux { bins s[]={[0:7]}; }
     cp_ao : coverpoint apb_off_aux  { bins o[]={[0:3]}; }
     x_dir_wr: cross cp_dir, cp_wr;
-  endgroup : cg_apb_t
-  cg_md_t cg_md;
-  function new(); cg_md = new(); endfunction
+  endgroup
+  function new(); cg_apb = new(); endfunction
 
 endclass
 
