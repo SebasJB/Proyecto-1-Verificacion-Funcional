@@ -232,7 +232,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_out[i] = data_out_buffer[i];
         end
         @(posedge vif.clk);
-        $display("[MON] pkt=%p", pkt);
+        $display("[MON] pkt=%p", tr);
         send_transaction(tr);
       end
 
@@ -245,7 +245,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           tr.data_in[i] = data_in_buffer[i];
         end
         @(posedge vif.clk);
-        $display("[MON] pkt=%p", pkt);
+        $display("[MON] pkt=%p", tr);
         send_transaction(tr);
       end
     end
