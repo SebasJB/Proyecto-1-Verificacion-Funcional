@@ -98,7 +98,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
 
 
-  /*
+  
   function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], MD_pack2 #(ALGN_DATA_WIDTH) trans);
     int unsigned bytes_to_consume = rx_bytes_available();
     bit num_err = 0;
@@ -129,7 +129,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end
     end
     trans.err = num_err;
-  endfunction */
+  endfunction 
 
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
     msMD_mailbox.put(trans.clone());
@@ -259,7 +259,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 function int unsigned rx_bytes_available();
   int unsigned acc = 0;
   sem_buf.get();
-    foreach (data_in_buffer[i]) acc += data_in_buffer[i].bytes_left; // o .size si no usas bytes_left
+    foreach (data_in_buffer[i]) acc += data_in_buffer[i].size; 
   sem_buf.put();
   return acc;
 endfunction
@@ -291,19 +291,15 @@ task aligner();
     // Construir paquete (consumir EXACTAMENTE 'need' bytes)
     tr = new();
     tr.data_out    = tx_sample;
-    tr.size_out    = tx_sample.ctrl_size;
-    tr.offset_out  = tx_sample.ctrl_offset;
-    tr.t_data_out  = tx_sample.t_sample;
-
     sem_buf.get();
       consume_rx_bytes(data_in_buffer, tr, need); // tu versión que agrega a tr.data_in[$]
     sem_buf.put();
 
-    tr.t_data_in = (tr.data_in.size() > 0) ? tr.data_in[0].t_sample : 0;
+    tr.data_in = (tr.data_in.size() > 0) ? tr.data_in[0].t_sample : 0;
 
     // DEBUG útil
     $display("[MD_MON] Enviado MD -> TX(size=%0d,data=%h) RX(samples=%0d,bytes=%0d)",
-             tr.size_out, tr.data_out.data_out, tr.data_in.size(), need);
+             tr.data_out.ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), need);
     foreach (tr.data_in[i]) begin
       $display("  [RX%0d] data=%h off=%0d size=%0d t=%0t",
                i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size, tr.data_in[i].t_sample);
