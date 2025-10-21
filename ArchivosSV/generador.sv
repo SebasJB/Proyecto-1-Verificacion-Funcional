@@ -150,7 +150,7 @@ mailbox tg_mailbox; //TEST -> GENERATOR
                 it_apb.txn_num = j+1;
                 it_apb.randomize(); it_apb.post_randomize();
 
-                if (j == 550) begin
+                if (j == 390) begin
                   it_apb.APBaddr        = 16'h0000;
                   it_apb.Esc_Lec_APB    = 1'b1;
                   it_apb.APBdata        = 32'h0001_0000;
@@ -198,14 +198,14 @@ mailbox tg_mailbox; //TEST -> GENERATOR
                     it_apb.Esc_Lec_APB    = 1'b1;      // WRITE
                     it_apb.apb_addr_valid = 1'b1;      // coherencia total 
                   //  vld                   = 1'b1;
-                    it_apb.APBdata[4:0]   = 5'h1F;     // SET
+                    it_apb.APBdata[4:0]   = 5'h00;     // CLR
                   end
                   60: begin
                     it_apb.APBaddr        = 16'h00F0;  // IRQE
                     it_apb.Esc_Lec_APB    = 1'b1;
                     it_apb.apb_addr_valid = 1'b1;
                   //  vld                   = 1'b1;
-                    it_apb.APBdata[4:0]   = 5'h00;     // CLR
+                    it_apb.APBdata[4:0]   = 5'h1F;     // SET
                   end
                   100: begin
                     it_apb.APBaddr        = 16'h00F4;  // IRQ
