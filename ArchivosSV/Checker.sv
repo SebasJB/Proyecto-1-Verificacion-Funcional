@@ -34,6 +34,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   );
     byte       byte_stream[$];
     md_rx_s    rx_s;
+    exp = '{default:0};
 
     // 1) Aplanar todas las entradas válidas -> bytes (en orden de llegada)
     foreach (pkt.data_in[i]) begin
