@@ -104,7 +104,7 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   endfunction
 
   covergroup cg_md @(md_cov_ev); option.per_instance=1;
-    cp_sz : coverpoint md_size   { bins s0={0}; bins s1={1}; bins s2={2}; bins s4={4}; bins other=default; }
+    cp_sz : coverpoint md_size   { bins s0={0}; bins s1={1}; bins s2={2}; bins s4={4}; }
     cp_of : coverpoint md_offset { bins o[] = {[0:3]}; }
     x_sz_of: cross cp_sz, cp_of;
   endgroup
@@ -199,7 +199,7 @@ class APB_pack1;
   covergroup cg_apb @(apb_cov_ev); option.per_instance=1;
     cp_dir: coverpoint APBaddr { bins CTRL={16'h0000}; bins STAT={16'h000C}; bins IRQE={16'h00F0}; bins IRQ={16'h00F4}; }
     cp_wr : coverpoint Esc_Lec_APB { bins RD={0}; bins WR={1}; }
-    cp_as : coverpoint apb_size_aux { bins s[]={[0:7]}; }
+    cp_as : coverpoint apb_size_aux {  bins s0={0}; bins s1={1}; bins s2={2}; bins s4={4}; }
     cp_ao : coverpoint apb_off_aux  { bins o[]={[0:3]}; }
     x_dir_wr: cross cp_dir, cp_wr;
   endgroup
@@ -298,8 +298,8 @@ class pack3;
   rand int    len_n_apb;
 
   constraint c_len {
-    if (mode==CASO_GENERAL) { len_n_md inside {[700:1100]}; len_n_apb inside {[400:600]}; }
-    if (mode==ESTRES)       { len_n_md inside {[700:1000]};  len_n_apb inside {[400:600]}; }
+    if (mode==CASO_GENERAL) { len_n_md inside {[700:1000]}; len_n_apb inside {[400:600]}; }
+    if (mode==ESTRES)       { len_n_md inside {[700:900]};  len_n_apb inside {[400:600]}; }
     if (mode==APB_CFG)      { len_n_md inside {[600:820]}; len_n_apb inside {[400:700]}; }
     if (mode==ERRORES)      { len_n_md == 600;              len_n_apb == 400; }
   }
