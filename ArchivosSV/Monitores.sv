@@ -291,7 +291,7 @@ task aligner();
     tr = new();
     tr.data_out    = tx_sample;
     sem_buf.get();
-      consume_rx_bytes(data_in_buffer, tr, need); // tu versión que agrega a tr.data_in[$]
+      consume_rx_bytes(data_in_buffer, tr); // tu versión que agrega a tr.data_in[$]
     sem_buf.put();
 
     tr.data_in = (tr.data_in.size() > 0) ? tr.data_in[0].t_sample : 0;
