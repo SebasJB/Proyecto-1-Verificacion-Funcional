@@ -220,7 +220,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       rx_sample = data_in_buffer.pop_front();
       @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-      if (data_in_buffer[0].size > rx_sample.ctrl_size) begin
+      if (data_in_buffer[0].size > rx_sample.size) begin
         wait (tx_bytes_count == data_in_buffer[0].size);
         tr = new();
         tr.data_in[0] = data_in_buffer[0];
