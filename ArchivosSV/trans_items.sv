@@ -150,7 +150,7 @@ class APB_pack1;
   }
 
   // 50/50 entre escritura/lectura
-  constraint c_apb_wr { Esc_Lec_APB dist {1:=50, 0:=50}; }
+  constraint c_apb_wr { Esc_Lec_APB dist {1:=30, 0:=70}; }
 
   // 70/30 para (size,offset) embebidos en APBdata (apb_code)
   constraint c_apb_code {
@@ -167,7 +167,7 @@ class APB_pack1;
   }
 
   // Gaps APB por modo
-  constraint c_apb_conf_gen    { if (mode==CASO_GENERAL || mode==APB_CFG || mode==ERRORES) conf_cycles inside {[1:5]}; }
+  constraint c_apb_conf_gen    { if (mode==CASO_GENERAL || mode==APB_CFG || mode==ERRORES) conf_cycles inside {[5:10]}; }
   constraint c_apb_conf_stress { if (mode==ESTRES)                                         conf_cycles inside {[1:2]}; }
 
   // ========================= post_randomize (APB) =========================

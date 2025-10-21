@@ -69,18 +69,18 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.md_rx_offset = item.md_offset;
         vif.md_rx_size   = item.md_size;
         vif.md_rx_valid  = 1'b1;
-        $display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",
+        //$display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",
         $time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
         // Espera hasta que el DUT indique ready
         wait (vif.md_rx_ready === 1'b1);    // si rx_ready se coloca en 1 en este mismo ciclo, el wait termina de inmediato.
-        $display("[%0t] MD_DRV  ready=1 err=%0b", $time, vif.md_rx_err);
+        //$display("[%0t] MD_DRV  ready=1 err=%0b", $time, vif.md_rx_err);
         // Un ciclo después de ready=1, soltar líneas a 0
         @(posedge vif.clk);
         vif.md_rx_valid  = 1'b0;
         vif.md_rx_data   = '0;
         vif.md_rx_offset = '0;
         vif.md_rx_size   = '0;
-        $display("[%0t] MD_DRV  gap=%0d", $time, item.trans_cycles);
+        //$display("[%0t] MD_DRV  gap=%0d", $time, item.trans_cycles);
         // tiempo de espera siguiente transacción
         repeat (item.trans_cycles) @(posedge vif.clk);
       end
@@ -133,7 +133,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
                ? item.APBdata : '0;
         vif.psel    = 1'b1;
         vif.penable = 1'b0;
-        $display("[%0t] APB_DRV SETUP  test=%s tran#=%0d  %s addr=0x%0h data=0x%0h",
+        //$display("[%0t] APB_DRV SETUP  test=%s tran#=%0d  %s addr=0x%0h data=0x%0h",
         $time, mode2str(item.mode), item.txn_num, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
         @(posedge vif.clk);
 
@@ -144,11 +144,11 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         wait (vif.pready === 1'b1);  
         // Si es lectura, tomar datos ahora (ciclo de PREADY)
         if (!item.Esc_Lec_APB) begin
-          $display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b",
+          //$display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b",
                    $time, item.APBaddr, vif.prdata, vif.pslverr);
         end else begin
           // LOG write complete
-          $display("[%0t] APB_DRV WRITE  addr=0x%0h data=0x%0h err=%0b",
+          //$display("[%0t] APB_DRV WRITE  addr=0x%0h data=0x%0h err=%0b",
                    $time, item.APBaddr, item.APBdata, vif.pslverr);
         end
         // Flanco inmediatamente POSTERIOR al flanco que tuvo PREADY=1 -> bajar
@@ -158,7 +158,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.pwrite  = 1'b0;
         vif.paddr   = '0;
         vif.pwdata  = '0;
-        $display("[%0t] APB_DRV DONE IDLE  gap=%0d", $time, item.conf_cycles);
+        //$display("[%0t] APB_DRV DONE IDLE  gap=%0d", $time, item.conf_cycles);
         // ---- transacciones entre configuraciones ----------------------------
         repeat (item.conf_cycles) @(posedge vif.clk);
       end
