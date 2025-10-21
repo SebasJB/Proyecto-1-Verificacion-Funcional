@@ -142,80 +142,63 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task sample_rx_data();
-
+    last_data_rx  = '0;
+    last_offset_rx= '0;
+    last_size_rx  = '0;
+    last_err_rx   = '0;
     forever begin
       @(posedge vif.clk);
-      // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
-      if (!vif.rstn) begin
-        // limpia estados
-        last_data_rx  = '0;
-        last_offset_rx= '0;
-        last_size_rx  = '0;
-        last_err_rx   = '0;
-      end 
-      else begin
-        bit change_rx = vif.md_rx_valid &&
+      bit change_rx = vif.md_rx_valid &&
            (vif.md_rx_data   !== last_data_rx   ||
             vif.md_rx_offset !== last_offset_rx ||
             vif.md_rx_size   !== last_size_rx   ||
             vif.md_rx_err    !== last_err_rx);
 
-        if (change_rx) begin
-            // CAPTURA una sola muestra COMPLETA
-            MD_Rx_Sample #(ALGN_DATA_WIDTH) sample = new();
-            sample.data_in = vif.md_rx_data;
-            sample.offset  = vif.md_rx_offset;
-            sample.size    = vif.md_rx_size;
-            sample.err     = vif.md_rx_err;
-            sample.t_sample= $time;
-            rx_bytes_count += sample.size;
-            data_in_buffer.push_back(sample);
-
-            // actualiza "last" después de capturar
-            last_data_rx   = vif.md_rx_data;
-            last_offset_rx = vif.md_rx_offset;
-            last_size_rx   = vif.md_rx_size;
-            last_err_rx    = vif.md_rx_err;
-          end
+      if (change_rx) begin
+          // CAPTURA una sola muestra COMPLETA
+          MD_Rx_Sample #(ALGN_DATA_WIDTH) sample = new();
+          sample.data_in = vif.md_rx_data;
+          sample.offset  = vif.md_rx_offset;
+          sample.size    = vif.md_rx_size;
+          sample.err     = vif.md_rx_err;
+          sample.t_sample= $time;
+          rx_bytes_count += sample.size;
+          data_in_buffer.push_back(sample);
+          // actualiza "last" después de capturar
+          last_data_rx   = vif.md_rx_data;
+          last_offset_rx = vif.md_rx_offset;
+          last_size_rx   = vif.md_rx_size;
+          last_err_rx    = vif.md_rx_err;
         end
-    end  
+      end
   endtask
 
   task sample_tx_data();
-
+    last_data_tx  = '0;
+    last_offset_tx= '0;
+    last_size_tx  = '0;
     forever begin
       @(posedge vif.clk);
-      // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
-      if (!vif.rstn) begin
-        // limpia estados
-        last_data_tx  = '0;
-        last_offset_tx= '0;
-        last_size_tx  = '0;
-      end 
-      else begin
-        bit change_tx = vif.md_tx_valid &&
-           (vif.md_tx_data   !== last_data_tx   ||
-            vif.md_tx_offset !== last_offset_tx ||
-            vif.md_tx_size   !== last_size_tx   ||
-            vif.md_tx_err    !== last_err_tx);
-
-        if (change_tx) begin
-            MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
-            sample.data_out = vif.md_tx_data;
-            sample.ctrl_offset = vif.md_tx_offset;
-            sample.ctrl_size = vif.md_tx_size;
-            sample.t_sample = $time;
-            data_out_buffer.push_back(sample);
-            tx_bytes_count += sample.ctrl_size;
-            // actualiza "last" después de capturar
-            last_data_tx   = vif.md_tx_data;
-            last_offset_tx = vif.md_tx_offset;
-            last_size_tx   = vif.md_tx_size;
-          end
-        end
+      bit change_tx = vif.md_tx_valid &&
+      (vif.md_tx_data   !== last_data_tx  ||
+      vif.md_tx_offset !== last_offset_tx ||
+      vif.md_tx_size   !== last_size_tx   ||
+      vif.md_tx_err    !== last_err_tx);
+      if (change_tx) begin
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) sample;
+        sample.data_out = vif.md_tx_data;
+        sample.ctrl_offset = vif.md_tx_offset;
+        sample.ctrl_size = vif.md_tx_size;
+        sample.t_sample = $time;
+        data_out_buffer.push_back(sample);
+        tx_bytes_count += sample.ctrl_size;
+        // actualiza "last" después de capturar
+        last_data_tx   = vif.md_tx_data;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx   = vif.md_tx_size;
+      end
     end
- endtask
-  
+  endtask
 
   task aligner();
     MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_sample;

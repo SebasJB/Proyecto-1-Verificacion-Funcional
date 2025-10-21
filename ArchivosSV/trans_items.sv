@@ -356,9 +356,6 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
     MD_pack2#(ALGN_DATA_WIDTH) c = new();
     c.data_in = this.data_in;
     c.data_out = this.data_out;
-    c.offset_out = this.offset_out;
-    c.size_out = this.size_out;
-    c.err = this.err;
     c.t_tx_sample = this.t_tx_sample;
     return c;
   endfunction
