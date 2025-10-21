@@ -173,8 +173,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       else begin
         sem_buf.put();
       end
-      end
-
     end
   endtask
 
