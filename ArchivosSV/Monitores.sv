@@ -228,6 +228,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           @ev_tx_pushed;
         end
         tr = new();
+        tr.data_in[0] = rx_sample;
         foreach (data_out_buffer[i]) begin
           tr.data_out[i] = data_out_buffer[i];
         end
@@ -241,6 +242,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           @ev_rx_pushed;
         end
         tr = new();
+        tr.data_out[0] = tx_sample;
         foreach (data_in_buffer[i]) begin
           tr.data_in[i] = data_in_buffer[i];
         end
