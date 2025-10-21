@@ -214,7 +214,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       tx_sample = data_out_buffer.pop_front();
       if (data_in_buffer[0].size > tx_sample.ctrl_size) begin
         wait (tx_bytes_count == data_in_buffer[0].size);
-        
+        tr = new();
         tr.data_in[0] = data_in_buffer[0];
         tr.data_out[0] = tx_sample;
         foreach (data_out_buffer[i]) begin
@@ -227,6 +227,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       else begin
         wait (rx_bytes_count == tx_sample.ctrl_size);
+        tr = new();
         tr.data_in[0] = data_in_buffer[0];
         tr.data_out[0] = tx_sample;
         foreach (data_in_buffer[i]) begin
