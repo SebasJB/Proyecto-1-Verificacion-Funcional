@@ -69,8 +69,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.md_rx_offset = item.md_offset;
         vif.md_rx_size   = item.md_size;
         vif.md_rx_valid  = 1'b1;
-        //$display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",
-        $time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
+        //$display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",$time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
         // Espera hasta que el DUT indique ready
         wait (vif.md_rx_ready === 1'b1);    // si rx_ready se coloca en 1 en este mismo ciclo, el wait termina de inmediato.
         //$display("[%0t] MD_DRV  ready=1 err=%0b", $time, vif.md_rx_err);
@@ -133,8 +132,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
                ? item.APBdata : '0;
         vif.psel    = 1'b1;
         vif.penable = 1'b0;
-        //$display("[%0t] APB_DRV SETUP  test=%s tran#=%0d  %s addr=0x%0h data=0x%0h",
-        $time, mode2str(item.mode), item.txn_num, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
+        //$display("[%0t] APB_DRV SETUP  test=%s tran#=%0d  %s addr=0x%0h data=0x%0h", $time, mode2str(item.mode), item.txn_num, (item.Esc_Lec_APB ? "WRITE":"READ"), item.APBaddr, item.APBdata);
         @(posedge vif.clk);
 
         // ---- ACCESS: levantar PENABLE y esperar PREADY ----
