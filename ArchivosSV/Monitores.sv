@@ -235,6 +235,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         @(posedge vif.clk);
         $display("[MON] pkt=%p", tr);
         send_transaction(tr);
+        rx_bytes_count = 0;
+        tx_bytes_count = 0;
       end
 
       else begin
@@ -249,6 +251,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         @(posedge vif.clk);
         $display("[MON] pkt=%p", tr);
         send_transaction(tr);
+        rx_bytes_count = 0;
+        tx_bytes_count = 0;
       end
     end
   endtask
