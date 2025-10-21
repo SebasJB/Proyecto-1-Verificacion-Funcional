@@ -142,12 +142,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task sample_rx_data();
-    initial begin
-      last_data_rx  = 'x;
-      last_offset_rx= 'x;
-      last_size_rx  = 'x;
-      last_err_rx   = 'x;
-    end
 
     forever begin
       @(posedge vif.clk);
@@ -188,11 +182,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task sample_tx_data();
-    initial begin
-      last_data_tx  = 'x;
-      last_offset_tx= 'x;
-      last_size_tx  = 'x;
-    end
 
     forever begin
       @(posedge vif.clk);
