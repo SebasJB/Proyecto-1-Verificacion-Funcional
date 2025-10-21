@@ -15,6 +15,8 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   // Tamaños para offset/size (idénticos al pack1 this)
   localparam int ALGN_OFFSET_WIDTH = 2;
   localparam int ALGN_SIZE_WIDTH   = 3;
+  localparam int BYTES = ALGN_DATA_WIDTH/8; // se utiliza en covergroups
+  event md_cov_ev; //evento para covergroups
 
   test_e mode;      // tipo de prueba
   int    txn_num;   // número de transacción
@@ -93,6 +95,7 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
   // ========================= post_randomize (MD) =========================
   function void post_randomize();
     if (md_data==='0) md_data = $urandom();
+    -> md_cov_ev;
   endfunction
 
   // ========================= util/print =========================
@@ -100,6 +103,19 @@ class MD_pack1 #(parameter int ALGN_DATA_WIDTH = 32);
     $display("[%0t] %s MD_pack1 mode=%0d | MD: data=%h size=%0d off=%0d gap=%0d",
       $time, tag, mode, md_data, md_size, md_offset, trans_cycles);
   endfunction
+
+  covergroup cg_md @(md_cov_ev); option.per_instance=1;
+    cp_sz : coverpoint md_size   { bins s0={0}; bins s1={1}; bins s2={2}; bins s4={4}; bins other=default; }
+    cp_of : coverpoint md_offset { bins o[]={[0:(1<<ALGN_OFFSET_WIDTH)-1]}; }
+    cp_v  : coverpoint ((md_size!=0)&&(((BYTES+md_offset)%md_size)==0)) { bins ok={1}; bins bad={0}; }
+    x_sz_of: cross cp_sz,cp_of;
+  endgroup
+  cg_md_t cg_md;    
+  function new(); 
+    cg_md=new(); 
+  endfunction
+  // Al final de tu post_randomize():
+  // -> md_cov_ev;
 
 endclass
 
@@ -131,6 +147,7 @@ class APB_pack1;
   static int unsigned valid_pairs  [$] = '{10,11,12,13,20,22,40};
   static int unsigned invalid_pairs[$] = '{00,01,02,03,21,23,30,31,32,33,41,42,43};
 
+  event apb_cov_ev; //evento para covergroup
   // ========================= Constraints (APB) =========================
   // Dirección válida 50% dentro del set, inválida 50% fuera
   constraint c_apb_addr {
@@ -176,6 +193,7 @@ class APB_pack1;
       APBdata[31:5] = '0;
       APBdata[4:0]  = $urandom_range(0,31);
     end
+    -> apb_cov_ev;
   endfunction
 
   // ========================= util/print =========================
@@ -184,6 +202,20 @@ class APB_pack1;
       $time, tag, mode, (Esc_Lec_APB ? "WR" : "RD"), APBaddr, APBdata, conf_cycles,
       apb_size_aux, apb_off_aux, apb_addr_valid);
   endfunction
+
+  covergroup cg_apb_t @(apb_cov_ev); option.per_instance=1;
+    cp_dir: coverpoint APBaddr { bins CTRL={16'h0000}; bins STAT={16'h000C}; bins IRQE={16'h00F0}; bins IRQ={16'h00F4}; bins OTH=default; }
+    cp_wr : coverpoint Esc_Lec_APB { bins RD={0}; bins WR={1}; }
+    cp_vld: coverpoint (APBaddr inside {16'h0000,16'h000C,16'h00F0,16'h00F4}) { bins V={1}; bins IV={0}; }
+    cp_as : coverpoint apb_size_aux { bins s[]={[0:7]}; }
+    cp_ao : coverpoint apb_off_aux  { bins o[]={[0:3]}; }
+    x_dir_wr: cross cp_dir, cp_wr;
+  endgroup : cg_apb_t
+  cg_apb_t cg_apb;                    // handle
+  function new(); 
+  cg_apb = new(); 
+  endfunction
+  // En tu post_randomize() existente, al final:  -> apb_cov_ev;
 
 endclass
 

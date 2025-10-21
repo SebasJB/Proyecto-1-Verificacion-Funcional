@@ -15,31 +15,6 @@ mailbox gsAPB_mailbox; //Generador -> scoreboard : APB
 mailbox tg_mailbox; //TEST -> GENERATOR
 
 
-  // Covergroup para MD: cubre size, offset y validez (70/30 o 100% legal en estrés)
-//  covergroup cgg_md with function sample(int size, int offset, bit is_valid);
-//    option.per_instance = 1;
-//    cp_sz : coverpoint size   { bins s[] = {0,1,2,4}; }
-//    cp_of : coverpoint offset { bins o[] = {[0:3]}; }
-//    cp_v  : coverpoint is_valid { bins ok={1}; bins bad={0}; }
-//    cross cp_sz, cp_of;
-//  endgroup
-//  cgg_md cg_md; // handle del covergroup
-
-  // Covergroup para APB: cubre dirección, tipo (RD/WR), validez de dirección
-  // y los campos embebidos (size/offset) que viajan dentro de APBdata
-//  covergroup cgg_apb with function sample(logic [15:0] addr, bit wr, bit addr_valid, int apb_size, int apb_off);
-//    option.per_instance = 1;
-//    cp_dir : coverpoint addr { bins CTRL={16'h0000}; bins STAT={16'h000C};
-//                               bins IRQE={16'h00F0}; bins IRQ={16'h00F4}; bins OTH=default; }
-//    cp_wr  : coverpoint wr   { bins RD={0}; bins WR={1}; }
-//    cp_vld : coverpoint addr_valid { bins V={1}; bins IV={0}; }
-//    cp_as  : coverpoint apb_size { bins s[] = {[0:7]}; }
-//    cp_ao  : coverpoint apb_off  { bins o[] = {[0:3]}; }
-//    cross cp_dir, cp_wr;
-//  endgroup
-//  cgg_apb cg_apb; // handle del covergroup
-
-
   // clone solo campos necesarios para drivers/scoreboard/checker
   function automatic MD_pack1 clone_md(MD_pack1 s);
     MD_pack1 d = new();

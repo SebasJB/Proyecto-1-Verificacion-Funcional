@@ -71,8 +71,8 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         vif.md_rx_valid  = 1'b1;
         $display("[%0t] MD_DRV SETUP  test=%s tran#=%0d  data=0x%0h off=%0d size=%0d",
         $time, mode2str(item.mode), item.txn_num, item.md_data, item.md_offset, item.md_size);
-
-        wait (vif.md_rx_ready === 1'b1);    // Espera ready del DUT 
+        // Espera hasta que el DUT indique ready
+        wait (vif.md_rx_ready === 1'b1);    // si rx_ready se coloca en 1 en este mismo ciclo, el wait termina de inmediato.
         $display("[%0t] MD_DRV  ready=1 err=%0b", $time, vif.md_rx_err);
         // Un ciclo después de ready=1, soltar líneas a 0
         @(posedge vif.clk);
