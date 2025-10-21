@@ -94,13 +94,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   int unsigned tx_bytes_count;
   
 
-  function int unsigned rx_bytes_available();
-    int unsigned total = 0;
-    foreach (data_in_buffer[i]) begin
-      total += data_in_buffer[i].bytes_left;
-    end
-    return total;
-  endfunction
+
 
   /*
   function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], MD_pack2 #(ALGN_DATA_WIDTH) trans);
@@ -215,7 +209,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tr.data_out = tx_sample;
         tr.t_data_out = tx_sample.t_sample;
         bytes = tx_sample.ctrl_size;
-        consume_rx_bytes(data_in_buffer, tr, bytes);
+        //consume_rx_bytes(data_in_buffer, tr, bytes);
         send_transaction(tr);
       end
     end

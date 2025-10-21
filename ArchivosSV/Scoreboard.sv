@@ -53,15 +53,15 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     forever begin
       msMD_mailbox.get(MD_tr);
       mon_rx_data_q = MD_tr.data_in;
-      mon_rx_offset_q.push_back(MD_tr.offset_in);
-      mon_rx_size_q.push_back(MD_tr.size_in);
+      mon_rx_offset_q.push_back(MD_tr.data_in.offset);
+      mon_rx_size_q.push_back(MD_tr.data_in.size);
       tx_data_q.push_back(MD_tr.data_out);
-      tx_offset_q.push_back(MD_tr.offset_out);
-      tx_size_q.push_back(MD_tr.size_out);
-      err_q.push_back(MD_tr.err);
-      t_in.push_back(MD_tr.t_data_in);
-      t_out.push_back(MD_tr.t_data_out);
-      time_trans_q.push_back(MD_tr.t_data_in - MD_tr.t_tx_sample);
+      tx_offset_q.push_back(MD_tr.data_out.offset);
+      tx_size_q.push_back(MD_tr.data_out.size);
+      err_q.push_back(MD_tr.data_out.err);
+      t_in.push_back(MD_tr.data_in.t_sample);
+      t_out.push_back(MD_tr.data_out.t_sample);
+      time_trans_q.push_back(MD_tr.data_in.t_sample - MD_tr.data_out.t_sample);
     end
   endtask
 

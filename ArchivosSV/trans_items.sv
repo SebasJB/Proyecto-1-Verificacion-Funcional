@@ -348,15 +348,11 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
 
   MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in[$]; // refleja md_rx_data que alimentaron esta TX (pueden ser varias y/o fracciones)
   MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out[$]; // refleja md_tx_data que generaron esta TX (pueden ser varias y/o fracciones)
-  time t_data_in; // tiempo del primer muestreo válido
-  time t_data_out;  // tiempo del último muestreo válido
-  time t_tx_sample; // tiempo del handshake válido
 
   function MD_pack2 #(ALGN_DATA_WIDTH) clone();
     MD_pack2#(ALGN_DATA_WIDTH) c = new();
     c.data_in = this.data_in;
     c.data_out = this.data_out;
-    c.t_tx_sample = this.t_tx_sample;
     return c;
   endfunction
 endclass
