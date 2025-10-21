@@ -106,7 +106,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     int unsigned sample_bytes;
     while (bytes_to_consume > 0) begin
       if (rx_fifo.size() == 0) begin
-        $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", num_bytes);
+        $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", bytes_to_consume);
       end     
       current_sample = rx_fifo[0];
       sample_bytes = (bytes_to_consume <= current_sample.size) ? bytes_to_consume : current_sample.size;
@@ -127,7 +127,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         rx_fifo[0] = current_sample;
       end
     end
-    trans.err = num_err;
+    trans.data_in.err = num_err;
   endfunction 
 
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
@@ -298,7 +298,7 @@ task aligner();
 
     // DEBUG útil
     $display("[MD_MON] Enviado MD -> TX(size=%0d,data=%h) RX(samples=%0d,bytes=%0d)",
-             tr.data_out.ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), need);
+             tr.data_out.ctrl_size, tr.data_out.data_out, tr.data_in.size(), need);
     foreach (tr.data_in[i]) begin
       $display("  [RX%0d] data=%h off=%0d size=%0d t=%0t",
                i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size, tr.data_in[i].t_sample);
