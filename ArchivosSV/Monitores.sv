@@ -137,7 +137,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   endtask
 
   task sample_rx_data();
-    MD_Rx_Sample #(ALGN_DATA_WIDTH) sample
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) sample;
     last_data_rx  = '0;
     last_offset_rx= '0;
     last_size_rx  = '0;
