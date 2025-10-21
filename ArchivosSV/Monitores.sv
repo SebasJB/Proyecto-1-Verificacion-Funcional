@@ -68,6 +68,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Mutex para proteger acceso a las colas
   semaphore sem_buf = new(1);
+  event ev_rx_pushed, ev_tx_pushed;
 
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
@@ -152,25 +153,29 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (change_rx) begin
           // CAPTURA una sola muestra COMPLETA
+          sem_buf.get();
           sample = new();
           sample.data_in = vif.md_rx_data;
           sample.offset  = vif.md_rx_offset;
           sample.size    = vif.md_rx_size;
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
-          sem_buf.get();
+          
           data_in_buffer.push_back(sample);
           rx_bytes_count += sample.size;
-
-          @(posedge vif.clk);
-          sem_buf.put();
+          -> ev_rx_pushed;
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
           last_offset_rx = vif.md_rx_offset;
           last_size_rx   = vif.md_rx_size;
           last_err_rx    = vif.md_rx_err;
-        end
       end
+      else begin
+        sem_buf.put();
+      end
+      end
+
+    end
   endtask
 
   task sample_tx_data();
@@ -186,22 +191,23 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       vif.md_tx_size   !== last_size_tx   ||
       vif.md_tx_err    !== last_err_tx);
       if (change_tx) begin
+        sem_buf.get();
         sample = new();
         sample.data_out = vif.md_tx_data;
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
-
-        sem_buf.get();
         data_out_buffer.push_back(sample);
         tx_bytes_count += sample.ctrl_size;
-        
-        @(posedge vif.clk);
-        sem_buf.put();
+        -> ev_tx_pushed;
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
         last_offset_tx = vif.md_tx_offset;
         last_size_tx   = vif.md_tx_size;
+      end
+
+      else begin
+        sem_buf.put();
       end
     end
   endtask
@@ -212,9 +218,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
     int unsigned bytes;
     forever begin
-      wait (data_out_buffer.size() > 0);
+      @ev_rx_pushed;
+      rx_sample = data_in_buffer.pop_front();
+      @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-      if (data_in_buffer[0].size > tx_sample.ctrl_size) begin
+      if (data_in_buffer[0].size > rx_sample.ctrl_size) begin
         wait (tx_bytes_count == data_in_buffer[0].size);
         tr = new();
         tr.data_in[0] = data_in_buffer[0];
