@@ -202,7 +202,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tx_bytes_count += sample.ctrl_size;
 
         @(posedge vif.clk);
-        vif.md_tx_ready = 1'b1;
+        vif.md_tx_ready = 1'b0;
         sem_buf.put();
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
