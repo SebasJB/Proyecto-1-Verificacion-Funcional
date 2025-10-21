@@ -218,13 +218,16 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
     int unsigned bytes;
     forever begin
+      @ev_rx_pushed
+      rx_sample = data_in_buffer.pop_front();
       @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-      if (data_in_buffer[0].size > tx_sample.ctrl_size) begin
-        wait (tx_bytes_count == data_in_buffer[0].size);
+
+      if (rx_sample.size > tx_sample.ctrl_size) begin
+        while(tx_bytes_count < rx_sample.size) begin
+          @ev_tx_pushed;
+        end
         tr = new();
-        tr.data_in[0] = data_in_buffer[0];
-        tr.data_out[0] = tx_sample;
         foreach (data_out_buffer[i]) begin
           tr.data_out[i] = data_out_buffer[i];
         end
@@ -234,10 +237,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end
 
       else begin
-        wait (rx_bytes_count == tx_sample.ctrl_size);
+        while (rx_bytes_count < tx_sample.ctrl_size) begin
+          @ev_rx_pushed;
+        end
         tr = new();
-        tr.data_in[0] = data_in_buffer[0];
-        tr.data_out[0] = tx_sample;
         foreach (data_in_buffer[i]) begin
           tr.data_in[i] = data_in_buffer[i];
         end
