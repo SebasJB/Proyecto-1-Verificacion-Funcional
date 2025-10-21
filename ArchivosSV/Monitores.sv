@@ -167,6 +167,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
           @(posedge vif.clk);
           -> ev_rx_pushed;
+          sem_buf.put();
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
           last_offset_rx = vif.md_rx_offset;
@@ -202,6 +203,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
         @(posedge vif.clk);
         -> ev_tx_pushed;
+        sem_buf.put();
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
         last_offset_tx = vif.md_tx_offset;
