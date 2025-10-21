@@ -36,14 +36,27 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     md_rx_s    rx_s;
     exp_one = '{default:0};
 
-    // 1) Aplanar todas las entradas válidas -> bytes (en orden de llegada)
-    foreach (pkt.data_in[i]) begin
-      rx_s = rx_class_to_s(pkt.data_in[i]);
-      append_valid_window_bytes(rx_s, byte_stream);
-    end
+     byte byte_stream[$];
 
-    // 2) Emitir SOLO la primera salida posible de tamaño CTRL_SIZE
-    return emit_one_word_from_bytes(byte_stream, CTRL_SIZE, exp_one);
+    // 1) Aplanar entradas válidas del paquete a BYTES (orden de llegada)
+    foreach (pkt.data_in[i]) begin
+    md_rx_s rx_s;
+    rx_s.data   = pkt.data_in[i].data_in;
+    rx_s.offset = pkt.data_in[i].offset;
+    rx_s.size   = pkt.data_in[i].size;
+    append_valid_window_bytes(rx_s, byte_stream);
+  end
+
+  // 2) Tamaño requerido = el que mostró el DUT (pkt.size_out)
+  int need = pkt.size_out;
+
+  // DEBUG: imprimir flujo de bytes disponible
+  $write("[CHK] byte_stream(size=%0d) = [", byte_stream.size());
+  for (int k=0; k<byte_stream.size(); k++) $write("%02x%s", byte_stream[k], (k+1==byte_stream.size())? "": " ");
+  $write("]\n");
+
+  // 3) Armar UNA salida si hay bytes suficientes
+  return emit_one_word_from_bytes(byte_stream, need, exp_one);
   endfunction
 
   // ---- Comparación 1:1 contra lo observado en el paquete
