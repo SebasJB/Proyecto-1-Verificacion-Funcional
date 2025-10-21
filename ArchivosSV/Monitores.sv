@@ -230,7 +230,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tr = new();
         tr.data_in[0] = rx_sample;
         foreach (data_out_buffer[i]) begin
-          tr.data_out[i] = data_out_buffer[i];
+          tr.data_out[i] = data_out_buffer.pop_front();
         end
         @(posedge vif.clk);
         $display("[MON] pkt=%p", tr);
@@ -246,7 +246,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tr = new();
         tr.data_out[0] = tx_sample;
         foreach (data_in_buffer[i]) begin
-          tr.data_in[i] = data_in_buffer[i];
+          tr.data_in[i] = data_in_buffer.pop_front();
         end
         @(posedge vif.clk);
         $display("[MON] pkt=%p", tr);
