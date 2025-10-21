@@ -142,8 +142,7 @@ interface MD_if #(parameter int ALGN_DATA_WIDTH = 32) (input logic clk);
         wait (vif.pready === 1'b1);  
         // Si es lectura, tomar datos ahora (ciclo de PREADY)
         if (!item.Esc_Lec_APB) begin
-          //$display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b",
-                   $time, item.APBaddr, vif.prdata, vif.pslverr);
+          //$display("[%0t] APB_DRV READ addr=0x%0h read_data=0x%0h err=%0b", $time, item.APBaddr, vif.prdata, vif.pslverr);
         end else begin
           // LOG write complete
           //$display("[%0t] APB_DRV WRITE  addr=0x%0h data=0x%0h err=%0b",
