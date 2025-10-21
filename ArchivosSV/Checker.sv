@@ -40,7 +40,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
     // 1) Aplanar entradas válidas del paquete a BYTES (orden de llegada)
     foreach (pkt.data_in[i]) begin
-    md_rx_s rx_s = '{default:0};;
+    md_rx_s rx_s = '{default:0};
     rx_s.data   = pkt.data_in[i].data_in;
     rx_s.offset = pkt.data_in[i].offset;
     rx_s.size   = pkt.data_in[i].size;
