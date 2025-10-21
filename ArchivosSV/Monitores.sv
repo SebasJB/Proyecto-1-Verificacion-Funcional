@@ -127,7 +127,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         rx_fifo[0] = current_sample;
       end
     end
-    trans.data_in.err = num_err;
   endfunction 
 
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
@@ -289,7 +288,7 @@ task aligner();
 
     // Construir paquete (consumir EXACTAMENTE 'need' bytes)
     tr = new();
-    tr.data_out    = tx_sample;
+    tr.data_out = tx_sample;
     sem_buf.get();
       consume_rx_bytes(data_in_buffer, tr); // tu versión que agrega a tr.data_in[$]
     sem_buf.put();
@@ -298,7 +297,7 @@ task aligner();
 
     // DEBUG útil
     $display("[MD_MON] Enviado MD -> TX(size=%0d,data=%h) RX(samples=%0d,bytes=%0d)",
-             tr.data_out.ctrl_size, tr.data_out.data_out, tr.data_in.size(), need);
+             tx_sample.ctrl_size, tx_sample.data_out, tr.data_in.size(), need);
     foreach (tr.data_in[i]) begin
       $display("  [RX%0d] data=%h off=%0d size=%0d t=%0t",
                i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size, tr.data_in[i].t_sample);
