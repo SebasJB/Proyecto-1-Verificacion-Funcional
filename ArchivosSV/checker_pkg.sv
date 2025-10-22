@@ -5,18 +5,6 @@ package checker_pkg;
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(BYTES_W);
   localparam int ALGN_SIZE_WIDTH   = $clog2(BYTES_W) + 1;
 
-  typedef struct packed {
-    logic [ALGN_DATA_WIDTH-1:0] data_out;
-    logic [ALGN_OFFSET_WIDTH-1:0] ctrl_offset; // siempre 0 en golden
-    logic [ALGN_SIZE_WIDTH-1:0]   ctrl_size;   // = CFG_CTRL_SIZE
-  } md_tx_s;
-
-  typedef struct packed {
-    logic [ALGN_DATA_WIDTH-1:0] data;
-    logic [ALGN_OFFSET_WIDTH-1:0] offset; // bytes
-    logic [ALGN_SIZE_WIDTH-1:0]   size;   // bytes
-  } md_rx_s;
-
   // ---------- Reglas de validez (las que diste) ----------
   function automatic bit is_align_valid(
       input logic [ALGN_OFFSET_WIDTH-1:0] offset_b,
@@ -29,11 +17,11 @@ package checker_pkg;
 
   // ---------- Extraer ventana de bytes válido -> cola de bytes ----------
   function automatic void append_valid_window_bytes(
-      input  md_rx_s in_s,
+      input  MD_Rx_Sample in_s,
       inout  byte    byte_stream[$]   // se va llenando con bytes válidos
   );
-    int unsigned o;
-    int unsigned s;
+    logic [ALGN_OFFSET_WIDTH-1:0] o;
+    logic [ALGN_SIZE_WIDTH-1:0] s;
     if (!is_align_valid(in_s.offset, in_s.size)) return; // descarta inválidas
     o = in_s.offset;
     s = in_s.size;
@@ -45,11 +33,14 @@ package checker_pkg;
 
   // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
   function automatic bit emit_one_word_from_bytes(
-      inout  byte byte_stream[$],                    // entrada/salida
-      input  int  ctrl_size_bytes,                   // CFG_CTRL_SIZE (1..BYTES_W)
-      output md_tx_s out_one
+      inout byte byte_stream[$],                    // entrada/salida
+      input int ctrl_size_bytes,
+      input int ctrl_offset_bytes,              // CFG_CTRL_SIZE (1..BYTES_W)
+      output MD_Tx_Sample out_one
   );
-    out_one = '{data_out:'0, ctrl_offset:'0, ctrl_size:logic'(ctrl_size_bytes)};
+    out_one.data_out = '0;
+    out_one.offset = logic(ctrl_offset_bytes);
+    out_one.size = logic(ctrl_size_bytes);
     if (ctrl_size_bytes <= 0 || ctrl_size_bytes > BYTES_W) return 1'b0;
     if (byte_stream.size() < ctrl_size_bytes)               return 1'b0;
 

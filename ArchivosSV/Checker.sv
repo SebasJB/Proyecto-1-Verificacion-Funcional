@@ -1,11 +1,6 @@
 `include "checker_pkg.sv"
 import checker_pkg::*;
 
-// Se asume que ya están declaradas/visibles tus clases:
-/// class MD_Rx_Sample#(int ALGN_DATA_WIDTH = 32); endclass
-/// class MD_Tx_Sample#(int ALGN_DATA_WIDTH = 32); endclass
-/// class MD_pack2#(int ALGN_DATA_WIDTH = 32); endclass
-
 class Checker #(int W = ALGN_DATA_WIDTH);
 
   // Mailbox desde el monitor
@@ -19,28 +14,29 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   int unsigned n_checked, n_pass, n_fail;
 
   // ---- helper: clase RX -> struct simple
-  function automatic md_rx_s rx_class_to_s(const ref MD_Rx_Sample#(W) c);
-    md_rx_s s;
+  /*
+  function automatic MD_Rx_Sample rx_class_to_s(const ref MD_Rx_Sample#(W) c);
+    MD_Rx_Sample s;
     s.data   = c.data_in;
     s.offset = c.offset;
     s.size   = c.size;
     return s;
   endfunction
-
+  */ 
   // ---- Construye el "golden" para UN paquete (primera salida emitible)
   function automatic bit build_expected_one(
       const ref MD_pack2 #(W) pkt,
-      output md_tx_s exp_one
+      output MD_Tx_Sample exp_one
   );
-    byte       byte_stream[$];
-    md_rx_s    rx_s;
+    byte byte_stream[$];
+    MD_Rx_Sample rx_s;
     int need;
-    exp_one = '{default:0};
+    int offset;
     
 
     // 1) Aplanar entradas válidas del paquete a BYTES (orden de llegada)
     foreach (pkt.data_in[i]) begin
-    md_rx_s rx_s = '{default:0};
+    rx_s = new();
     rx_s.data   = pkt.data_in[i].data_in;
     rx_s.offset = pkt.data_in[i].offset;
     rx_s.size   = pkt.data_in[i].size;
@@ -61,7 +57,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
   // ---- Comparación 1:1 contra lo observado en el paquete
   function automatic bit compare_one(
-      input md_tx_s exp,
+      input MD_Tx_Sample exp,
       input MD_Tx_Sample got_data
   );
     bit ok = 1;
@@ -78,7 +74,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   // ---- Hilo principal del checker
   task run();
     MD_pack2 #(W) pkt;
-    md_tx_s exp;
+    MD_Tx_Sample #(W) exp;
     bit have;
     MD_Tx_Sample #(W) got_d;
     logic [ALGN_SIZE_WIDTH-1:0] got_sz;
