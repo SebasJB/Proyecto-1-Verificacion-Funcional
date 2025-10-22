@@ -1,6 +1,3 @@
-`include "checker_pkg.sv"
-import checker_pkg::*;
-
 class Checker #(int W = ALGN_DATA_WIDTH);
 
   localparam int BYTES_W        = (ALGN_DATA_WIDTH/8);
