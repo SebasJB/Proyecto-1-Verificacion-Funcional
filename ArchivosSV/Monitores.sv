@@ -224,8 +224,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (rx_sample.size > tx_sample.ctrl_size) begin
         while(tx_bytes_count < rx_sample.size) begin
+          sem_buf.get();
           @ev_tx_pushed;
           tx_bytes_count =+ tx_sample.ctrl_size;
+          sem_buf.put();
         end
         tr = new();
         tr.data_in[0] = rx_sample;
@@ -243,9 +245,12 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end
 
       else begin
+        
         while (rx_bytes_count < tx_sample.ctrl_size) begin
+          sem_buf.get();
           @ev_rx_pushed;
           rx_bytes_count =+ rx_sample.size;
+          sem_buf.put();
         end
         tr = new();
         tr.data_out[0] = tx_sample;
