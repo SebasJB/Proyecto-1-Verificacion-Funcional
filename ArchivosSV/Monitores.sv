@@ -58,7 +58,7 @@ endclass
 // - Reporta handshakes (MD_EVT_HANDSHAKE) cuando (md_tx_valid && md_tx_ready).
 // - Publica a msMD_mailbox (scoreboard) y mcMD_mailbox (checker).
 // ----------------------------------------------------
-/*
+
 class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Interfaz virtual (tu MD_if)
@@ -201,11 +201,13 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
         while(( i < bytes)|| ( tx_bytes_count < BYTES_W)) begin
+          @ev_tx_pushed;
+          tx_sample = data_out_buffer.pop_front();
           tx_bytes_count += $unsigned(tx_sample.ctrl_size);
           tr.data_out[i] = tx_sample;
           i++;
-          @ev_tx_pushed;
-          tx_sample = data_out_buffer.pop_front();
+          
+          
         end
         @(posedge vif.clk);
         $display("[MD_MON] Enviado paquete MD al checker: RX(size=%0d,data=%h) TX(samples=%0d) Bytes count: %0d", tr.data_in[0].size, tr.data_in[0].data_in, tr.data_out.size(), tx_bytes_count);
@@ -256,7 +258,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     join_none
   endtask 
 endclass 
-*/
+/*
 // ----------------------------------------------------
 // MD Monitor (para MD_if)
 // - Captura en RX y TX cada vez que cambia VALID o el contenido (data/offset/size/err).
@@ -536,5 +538,5 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     end // forever
   endtask
 
-endclass 
+endclass */
 
