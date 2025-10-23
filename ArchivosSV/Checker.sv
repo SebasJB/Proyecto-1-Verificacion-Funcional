@@ -56,8 +56,7 @@ function automatic bit concat_one_from_pkt32 (
       for (int b = 0; (b < s) && (bytes_avail < BYTES_W); b++ ) begin
         byte_stream[8*bytes_avail +: 8] = data_in_q[i].data_in[8*(o+b) +: 8];
         bytes_avail++;
-      end
-      if (bytes_avail == BYTES_W) break; // stream de 32b lleno
+      end // stream de 32b lleno
     end
 
     // ---------- 2) Necesidad de salida según el DUT ----------
@@ -101,7 +100,7 @@ endfunction
 
   // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
   function automatic void emit_one_word_from_bytes(
-      input bit [ALGN_DATA_WIDTH-1:0] byte_stream,
+      inout bit [ALGN_DATA_WIDTH-1:0] byte_stream,
       input int unsigned rx_num,  
       input int unsigned ctrl_size_bytes,                  // entrada/salida
       output MD_Tx_Sample out_one
@@ -190,7 +189,7 @@ endfunction
       valid = is_align_valid(tx_s.ctrl_offset, tx_s.ctrl_size);
       if (valid) begin
         tx_bytes_count = $unsigned(tx_s.ctrl_size);
-        emit_one_word_from_bytes(rx_s.data_in, avail, tx_bytes_count, exp_one);
+        emit_one_word_from_bytes(byte_stream, avail, tx_bytes_count, exp_one);
       end
     end
     
