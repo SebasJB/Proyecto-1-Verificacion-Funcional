@@ -198,7 +198,7 @@ endfunction
   $write("]\n");
 
   // 3) Armar UNA salida si hay bytes suficientes
-  return 1'b1
+  return 1'b1;
   endfunction
   
   
