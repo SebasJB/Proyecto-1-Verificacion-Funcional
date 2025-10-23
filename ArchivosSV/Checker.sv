@@ -101,13 +101,14 @@ endfunction
 
   // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
   function automatic void emit_one_word_from_bytes(
-      input bit [ALGN_DATA_WIDTH-1:0] byte_stream,  
+      input bit [ALGN_DATA_WIDTH-1:0] byte_stream,
+      input int unsigned rx_num,  
       input int unsigned ctrl_size_bytes,                  // entrada/salida
       output MD_Tx_Sample out_one
   );
 
     if (ctrl_size_bytes <= 0 || ctrl_size_bytes > BYTES_W) return;
-    if (byte_stream.size() < ctrl_size_bytes)               return;
+    if (rx_num < ctrl_size_bytes)               return;
 
     // Empaquetar los primeros ctrl_size_bytes en LSBs
     for (int i = 0; i < ctrl_size_bytes; i++) begin
@@ -176,7 +177,7 @@ endfunction
         end
       end
       tx_bytes_count = $unsigned(tx_s.ctrl_size);
-      emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
+      emit_one_word_from_bytes(byte_stream, avail, tx_bytes_count, exp_one);
     end
     else begin
       rx_s = new();
@@ -189,7 +190,7 @@ endfunction
       valid = is_align_valid(tx_s.ctrl_offset, tx_s.ctrl_size);
       if (valid) begin
         tx_bytes_count = $unsigned(tx_s.ctrl_size);
-        emit_one_word_from_bytes(rx_s, tx_bytes_count, exp_one);
+        emit_one_word_from_bytes(rx_s, avail, tx_bytes_count, exp_one);
       end
     end
     
