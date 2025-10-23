@@ -226,10 +226,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       tr.data_out[0] = tx_sample;
       if (rx_sample.size > tx_sample.ctrl_size) begin
         i = 0;
-        while(tx_bytes_count < rx_sample.size) begin
+        bytes = $unsigned(rx_sample.size)
+        while(tx_bytes_count < bytes) begin
           @ev_tx_pushed;
           tx_sample = data_out_buffer.pop_front();
-          tx_bytes_count =+ tx_sample.ctrl_size;
+          tx_bytes_count =+ $unsigned(tx_sample.ctrl_size);
           tr.data_out[i] = tx_sample;
           i++;
         end
@@ -243,10 +244,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       end
       else begin
         i = 0;
+        bytes = $unsigned(tx_sample.ctrl_size)
         while (rx_bytes_count < tx_sample.ctrl_size) begin
           @ev_rx_pushed;
           rx_sample = data_in_buffer.pop_front();
-          rx_bytes_count =+ rx_sample.size;
+          rx_bytes_count =+ $unsigned(rx_sample.size);
           tr.data_in[i] = rx_sample;
           i++;
         end
