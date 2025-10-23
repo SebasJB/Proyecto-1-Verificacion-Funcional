@@ -168,12 +168,12 @@ endfunction
         data_in_q[i] = pkt.data_in[i].data_in;
         rx_s.offset = pkt.data_in[i].offset;
         rx_s.size   = pkt.data_in[i].size;
-        valid = is_align_valid(rx_s.offset, rx_s.size)
+        valid = is_align_valid(rx_s.offset, rx_s.size);
         if (valid) begin
           byte_stream = concat_one_from_pkt32(pkt, tx_s, avail);
         end
       end
-      tx_bytes_count = $unsigned(tx_s.ctrl_size)
+      tx_bytes_count = $unsigned(tx_s.ctrl_size);
       emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
     end
     else begin
@@ -185,7 +185,7 @@ endfunction
       tx_s.ctrl_size = pkt.data_in[i].ctrl_size;
       valid = is_align_valid(tx_s.offset, tx_s.size);
       if (valid) begin
-        tx_bytes_count = $unsigned(tx_s.ctrl_size)
+        tx_bytes_count = $unsigned(tx_s.ctrl_size);
         emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
       end
     end
