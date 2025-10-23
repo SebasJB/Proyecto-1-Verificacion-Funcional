@@ -180,10 +180,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       tr = new();
       $display("[MON] Datos en el buffer de entrada: %0d", data_in_buffer.size());
       $display("[MON] Datos en el buffer de salida: %0d", data_out_buffer.size());
-      if (data_in_buffer.size() == 0 ) @ev_rx_pushed;
-      rx_sample = data_in_buffer.pop_front();
+      
       if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
+      rx_sample = data_in_buffer.pop_front();
       foreach (data_in_buffer[i]) begin
               $display("  [RX%0d] data=%h off=%0d size=%0d", i, data_in_buffer[i].data_in, data_in_buffer[i].offset, data_in_buffer[i].size);
             end
