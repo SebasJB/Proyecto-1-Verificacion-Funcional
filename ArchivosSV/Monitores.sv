@@ -239,8 +239,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           end
           else begin
             tr.data_err[i] = rx_sample;
-            if ()
-            rx_sample = data_in_buffer.pop_front(); 
+            if (data_in_buffer.size() != 0) rx_sample = data_in_buffer.pop_front(); 
+            else begin 
+              @ev_rx_pushed;
+              rx_sample = data_in_buffer.pop_front();
+            end
           end
         end
         @(posedge vif.clk);
