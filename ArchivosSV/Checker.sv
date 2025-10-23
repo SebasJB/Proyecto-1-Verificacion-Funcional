@@ -1,4 +1,5 @@
-class Checker #(int W = ALGN_DATA_WIDTH);
+
+class Checker #(int ALGN_DATA_WIDTH = 32);
 
   localparam int BYTES_W        = (ALGN_DATA_WIDTH/8);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(BYTES_W);
@@ -16,7 +17,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
   // ---- helper: clase RX -> struct simple
   /*
-  function automatic MD_Rx_Sample rx_class_to_s(const ref MD_Rx_Sample#(W) c);
+  function automatic MD_Rx_Sample rx_class_to_s(const ref MD_Rx_Sample#() c);
     MD_Rx_Sample s;
     s.data   = c.data_in;
     s.offset = c.offset;
@@ -29,7 +30,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 // para formar UNA salida esperada desde MD_pack2.
 // Devuelve 1 si pudo formarla (hubo >= need bytes), 0 si no.
 // ==========================================================
-function automatic bit concat_one_from_pkt32 #(ALGN_DATA_WIDTH = 32)(
+function automatic bit concat_one_from_pkt32 #(ALGN_DATA_WIDTH)(
   input data_in_q[$],
   ref MD_Tx_Sample #(ALGN_DATA_WIDTH) exp_one,    // salida esperada (clase)
   output int unsigned bytes_avail // bytes metidos en byte_stream
@@ -145,12 +146,12 @@ endfunction
 
   // ---- Construye el "golden" para UN paquete (primera salida emitible)
   function automatic bit build_expected_one(
-      ref MD_pack2 #(W) pkt,
+      ref MD_pack2 #(ALGN_DATA_WIDTH) pkt,
       output MD_Tx_Sample exp_one,
   );
-    MD_Rx_Sample #(W) data_in_q[$];
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_q[$];
     bit [ALGN_DATA_WIDTH-1:0] byte_stream;
-    MD_Tx_Sample #(W) tx_s;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_s;
     int unsigned tx_bytes_count;
     int unsigned avail;
     bit valid;
@@ -217,11 +218,11 @@ endfunction
 
   // ---- Hilo principal del checker
   task run();
-    MD_pack2 #(W) pkt;
-    MD_Tx_Sample #(W) exp;
+    MD_pack2 #(ALGN_DATA_WIDTH) pkt;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) exp;
     bit have;
-    MD_Tx_Sample #(W) got_d;
-    MD_Tx_Sample #(W) out_q;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) got_d;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) out_q;
     logic [ALGN_SIZE_WIDTH-1:0] got_sz;
     logic [ALGN_OFFSET_WIDTH-1:0] got_off;
 
@@ -243,7 +244,7 @@ endfunction
       got_off = got_d.ctrl_offset;
 
       if (!have) begin
-        MD_Tx_Sample #(W) null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
         if (compare_one(null_exp, got_d)) begin
           n_pass++;
           $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
