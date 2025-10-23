@@ -58,7 +58,7 @@ endclass
 // - Reporta handshakes (MD_EVT_HANDSHAKE) cuando (md_tx_valid && md_tx_ready).
 // - Publica a msMD_mailbox (scoreboard) y mcMD_mailbox (checker).
 // ----------------------------------------------------
-
+/*
 class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Interfaz virtual (tu MD_if)
@@ -200,7 +200,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
-        while((tx_bytes_count  < bytes)|| ( i < BYTES_W)) begin
+        while(( i < bytes)|| ( tx_bytes_count < BYTES_W)) begin
           tx_bytes_count += $unsigned(tx_sample.ctrl_size);
           tr.data_out[i] = tx_sample;
           i++;
@@ -225,7 +225,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
-        while ((rx_bytes_count < bytes)||(i < BYTES_W)) begin
+        while ((i < bytes)||(rx_bytes_count < BYTES_W)) begin
           rx_bytes_count += $unsigned(rx_sample.size);
           tr.data_in[i] = rx_sample;
           i++;
@@ -256,8 +256,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     join_none
   endtask 
 endclass 
-
-/* // ----------------------------------------------------
+*/
+// ----------------------------------------------------
 // MD Monitor (para MD_if)
 // - Captura en RX y TX cada vez que cambia VALID o el contenido (data/offset/size/err).
 // - Para el CHECKER/Scoreboard arma transacciones donde cada TX consume exactamente
@@ -536,5 +536,5 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     end // forever
   endtask
 
-endclass */
+endclass 
 
