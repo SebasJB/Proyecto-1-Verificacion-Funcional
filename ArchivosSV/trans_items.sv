@@ -312,10 +312,10 @@ endclass
 class MD_Rx_Sample #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH = $clog2(ALGN_DATA_WIDTH/8) + 1;
-  logic [ALGN_DATA_WIDTH-1:0] data_in;
-  logic [ALGN_OFFSET_WIDTH-1:0] offset;
-  logic [ALGN_SIZE_WIDTH-1:0] size;
-  logic err;      // refleja md_rx_err
+  bit [ALGN_DATA_WIDTH-1:0] data_in;
+  bit [ALGN_OFFSET_WIDTH-1:0] offset;
+  bit [ALGN_SIZE_WIDTH-1:0] size;
+  bit err;      // refleja md_rx_err
   time t_sample; // tiempo del muestreo válido
 
   function new();
@@ -330,9 +330,9 @@ endclass
 class MD_Tx_Sample #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH = $clog2(ALGN_DATA_WIDTH/8) + 1;
-  logic [ALGN_DATA_WIDTH-1:0] data_out;
-  logic [ALGN_OFFSET_WIDTH-1:0] ctrl_offset;
-  logic [ALGN_SIZE_WIDTH-1:0] ctrl_size;
+  bit [ALGN_DATA_WIDTH-1:0] data_out;
+  bit [ALGN_OFFSET_WIDTH-1:0] ctrl_offset;
+  bit logic [ALGN_SIZE_WIDTH-1:0] ctrl_size;
   time t_sample; // tiempo del muestreo válido
   function new();
     data_out = '0;
