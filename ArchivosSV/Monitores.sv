@@ -245,7 +245,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       else begin
         while (rx_bytes_count < tx_sample.ctrl_size) begin
           @ev_rx_pushed;
-          rx_bytes_count =+ rx_sample.size 
+          rx_bytes_count =+ rx_sample.size;
         end
         tr = new();
         tr.data_out[0] = tx_sample;
