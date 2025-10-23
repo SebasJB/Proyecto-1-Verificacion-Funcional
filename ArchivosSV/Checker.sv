@@ -237,7 +237,7 @@ endfunction
 
     forever begin
       mcMD_mailbox.get(pkt);
-      $display("[CHK] pkt=%p", pkt);
+      //$display("[CHK] pkt=%p", pkt);
       out_q = pkt.data_out;
       got_d = new();
 

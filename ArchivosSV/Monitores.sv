@@ -114,7 +114,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     forever begin
       
       @(posedge vif.clk);
-      change_rx = vif.md_rx_valid &&
+      change_rx = vif.md_rx_valid && vif.md_rx_ready;
            (vif.md_rx_data   !== last_data_rx   ||
             vif.md_rx_offset !== last_offset_rx ||
             vif.md_rx_size   !== last_size_rx   ||
@@ -227,7 +227,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
-        
         while ((rx_bytes_count < bytes)||( rx_bytes_count != bytes)) begin
           
           if (!rx_sample.err) begin
@@ -240,7 +239,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           end
           else begin
             tr.data_err[i] = rx_sample;
-            @ev_rx_pushed;
+            if ()
             rx_sample = data_in_buffer.pop_front(); 
           end
         end
