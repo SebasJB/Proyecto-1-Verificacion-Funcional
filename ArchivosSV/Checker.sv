@@ -101,7 +101,7 @@ endfunction
 
   // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
   function automatic void emit_one_word_from_bytes(
-      input bit byte_stream[$],  
+      input bit [ALGN_DATA_WIDTH-1:0] byte_stream[$],  
       input int unsigned ctrl_size_bytes,                  // entrada/salida
       output MD_Tx_Sample #(ALGN_DATA_WIDTH) out_one
   );
