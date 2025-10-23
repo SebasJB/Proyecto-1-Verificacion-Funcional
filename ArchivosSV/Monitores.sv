@@ -340,8 +340,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   // Envía transacción a scoreboard y checker
   function automatic void send_transaction(MD_pack2 #(ALGN_DATA_WIDTH) tr);
     // Si tu clase tiene clone(), cámbialo por put(tr.clone())
-    msMD_mailbox.put(tr);
-    mcMD_mailbox.put(tr);
+    msMD_mailbox.put(tr.clone());
+    mcMD_mailbox.put(tr.clone());
   endfunction
 
   // ====== API de arranque ======
