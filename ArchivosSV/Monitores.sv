@@ -67,9 +67,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Mutex para proteger acceso a las colas
-  semaphore sem_buf = new(2);
+  semaphore sem_buf = new();
   event ev_rx_pushed, ev_tx_pushed;
 
+  localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
 
@@ -226,8 +227,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       tr.data_out[0] = tx_sample;
       if (rx_sample.size > tx_sample.ctrl_size) begin
         i = 0;
+        tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
-        while(tx_bytes_count < bytes) begin
+        while((tx_bytes_count < bytes) && (i < BYTES_W)) begin
           @ev_tx_pushed;
           tx_sample = data_out_buffer.pop_front();
           tx_bytes_count =+ $unsigned(tx_sample.ctrl_size);
@@ -241,11 +243,13 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         end
         send_transaction(tr);
         tx_bytes_count = 0;
+        i = 0;
       end
       else begin
         i = 0;
+        rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
-        while (rx_bytes_count < bytes) begin
+        while ((rx_bytes_count < bytes) && (i < BYTES_W)) begin
           @ev_rx_pushed;
           rx_sample = data_in_buffer.pop_front();
           rx_bytes_count =+ $unsigned(rx_sample.size);
@@ -259,6 +263,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           end
         send_transaction(tr);
         rx_bytes_count = 0;
+        i = 0;
       end
     end
   endtask
