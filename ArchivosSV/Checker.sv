@@ -47,6 +47,7 @@ function automatic bit concat_one_from_pkt32 (
     // ---------- 1) Aplanar entradas a byte_stream (LSB-first) ----------
     // Recorre cada muestra de entrada y copia sus 'size' bytes
     // empezando en 'offset' al stream en orden de llegada.
+    bytes_avail = '0;
     foreach (data_in_q[i]) begin
       int o = $unsigned(data_in_q[i].offset);
       int s = $unsigned(data_in_q[i].size);
