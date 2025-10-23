@@ -162,6 +162,7 @@ endfunction
     int unsigned avail;
     bit valid;
     tx_bytes_count = 0;
+    exp_one = new();
      
     
     if (pkt.data_in[0].size < pkt.data_out[0].ctrl_size) begin
@@ -174,7 +175,7 @@ endfunction
         rx_s.size   = pkt.data_in[i].size;
         valid = is_align_valid(rx_s.offset, rx_s.size);
         if (valid) begin
-          concat_one_from_pkt32(pkt, data_in_q, tx_s, avail, byte_stream);
+          concat_one_from_pkt32(pkt, data_in_q, exp_one, avail, byte_stream);
         end
       end
       tx_bytes_count = $unsigned(tx_s.ctrl_size);
@@ -239,7 +240,6 @@ endfunction
       $display("[CHK] pkt=%p", pkt);
       out_q = pkt.data_out;
       got_d = new();
-      exp = new();
 
       $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       n_checked++;
