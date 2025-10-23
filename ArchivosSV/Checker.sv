@@ -31,7 +31,7 @@ class Checker #(int ALGN_DATA_WIDTH = 32);
 // Devuelve 1 si pudo formarla (hubo >= need bytes), 0 si no.
 // ==========================================================
 function bit concat_one_from_pkt32 (
-  ref MD_pack2 # (ALGN_DATA_WIDTH) pkt,
+  MD_pack2 # (ALGN_DATA_WIDTH) pkt,
   input MD_Rx_Sample data_in_q[$],
   output MD_Tx_Sample exp_one,    // salida esperada (clase)
   output int unsigned bytes_avail, // bytes metidos en byte_stream
