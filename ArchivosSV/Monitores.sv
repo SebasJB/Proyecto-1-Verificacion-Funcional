@@ -192,7 +192,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
             tr.data_in[0] = rx_sample;
             i = 0;
             bytes = $unsigned(rx_sample.size);
-            while((tx_bytes_count < bytes) || ( i < BYTES_W)) begin              
+            while((tx_bytes_count < bytes) || (tx_bytes_count != bytes )) begin              
               tr.data_out[i] = tx_sample;
               tx_bytes_count += $unsigned(tx_sample.ctrl_size);
               i++;
