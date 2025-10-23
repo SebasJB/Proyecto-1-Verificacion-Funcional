@@ -365,6 +365,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   // ====== Sampler RX ======
   task sample_rx_data();
     MD_Rx_Sample #(ALGN_DATA_WIDTH) s;
+    bit valid_toggled;
+    bit content_change;
     // Inicializa “last”
     last_data_rx   = '0;
     last_offset_rx = '0;
@@ -375,8 +377,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     forever begin
       @(posedge vif.clk);
 
-      bit valid_toggled  = (vif.md_rx_valid !== last_valid_rx);
-      bit content_change = vif.md_rx_valid && (
+      valid_toggled  = (vif.md_rx_valid !== last_valid_rx);
+      content_change = vif.md_rx_valid && (
                               (vif.md_rx_data   !== last_data_rx  ) ||
                               (vif.md_rx_offset !== last_offset_rx) ||
                               (vif.md_rx_size   !== last_size_rx  ) ||
