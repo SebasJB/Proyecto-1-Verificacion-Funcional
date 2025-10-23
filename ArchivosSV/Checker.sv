@@ -33,7 +33,7 @@ class Checker #(int ALGN_DATA_WIDTH = 32);
 function automatic bit concat_one_from_pkt32 (
   MD_pack2 # (ALGN_DATA_WIDTH) pkt,
   MD_Rx_Sample data_in_q[$],
-  ref MD_Tx_Sample #(ALGN_DATA_WIDTH) exp_one,    // salida esperada (clase)
+  output MD_Tx_Sample exp_one,    // salida esperada (clase)
   output int unsigned bytes_avail // bytes metidos en byte_stream
 );
 
@@ -73,7 +73,7 @@ function automatic bit concat_one_from_pkt32 (
            byte_stream[23:16], byte_stream[31:24]);
 
     // Validaciones mínimas
-    if (need <= 0 || need > BYTES_W || ((BYTES_W + int'(off_out)) % int'(need)) == 0) begin
+    if (need <= 0 || need > BYTES_W || ((BYTES_W + int'(off_out)) % int'(need)) != 0) begin
       $error("[CHK] combinación inválida: need=%0d off=%0d (BYTES_W=%0d)", need, off_out, BYTES_W);
       return '0;
     end
@@ -226,9 +226,10 @@ endfunction
   task run();
     MD_pack2 #(ALGN_DATA_WIDTH) pkt;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) exp;
-    bit have;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp
     MD_Tx_Sample #(ALGN_DATA_WIDTH) got_d;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) out_q [$];
+    bit have;
     logic [ALGN_SIZE_WIDTH-1:0] got_sz;
     logic [ALGN_OFFSET_WIDTH-1:0] got_off;
 
@@ -251,7 +252,7 @@ endfunction
       got_off = got_d.ctrl_offset;
 
       if (!have) begin
-        MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp= new();
+        null_exp = new();
         if (compare_one(null_exp, got_d)) begin
           n_pass++;
           $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
