@@ -71,7 +71,7 @@ function automatic bit concat_one_from_pkt32 (
            byte_stream[23:16], byte_stream[31:24]);
 
     // Validaciones mínimas
-    if (need <= 0 || need > BYTES_W || BYTES_W + int'(off_out)) % int'(need)) == 0) begin
+    if (need <= 0 || need > BYTES_W || ((BYTES_W + int'(off_out)) % int'(need)) == 0) begin
       $error("[CHK] combinación inválida: need=%0d off=%0d (BYTES_W=%0d)", need, off_out, BYTES_W);
       break
     end
