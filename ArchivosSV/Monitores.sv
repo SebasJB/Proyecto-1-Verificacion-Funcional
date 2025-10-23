@@ -214,42 +214,40 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_sample;
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
     int unsigned bytes;
+    int unsigned i;
     forever begin
+      tr = new();
       @ev_rx_pushed;
       rx_sample = data_in_buffer.pop_front();
+      tr.data_in[0] = rx_sample;
       @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-
+      tr.data_out[0] = tx_sample;
       if (rx_sample.size > tx_sample.ctrl_size) begin
+        i = 0;
         while(tx_bytes_count < rx_sample.size) begin
           @ev_tx_pushed;
+          tx_sample = data_out_buffer.pop_front();
           tx_bytes_count =+ tx_sample.ctrl_size;
-        end
-        tr = new();
-        tr.data_in[0] = rx_sample;
-        foreach (data_out_buffer[i]) begin
-          tr.data_out[i] = data_out_buffer.pop_front();
+          tr.data_out[i] = tx_sample;
+          i++;
         end
         @(posedge vif.clk);
         $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d)", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size());
-         foreach (tr.data_in[i]) begin
+        foreach (tr.data_in[i]) begin
           $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
-          end
-
+        end
         send_transaction(tr);
         tx_bytes_count = 0;
       end
-
       else begin
-        
+        i = 0;
         while (rx_bytes_count < tx_sample.ctrl_size) begin
           @ev_rx_pushed;
+          rx_sample = data_in_buffer.pop_front();
           rx_bytes_count =+ rx_sample.size;
-        end
-        tr = new();
-        tr.data_out[0] = tx_sample;
-        foreach (data_in_buffer[i]) begin
-          tr.data_in[i] = data_in_buffer.pop_front();
+          tr.data_in[i] = rx_sample;
+          i++;
         end
         @(posedge vif.clk);
          $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d)", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size());
