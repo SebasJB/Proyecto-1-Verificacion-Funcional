@@ -348,7 +348,7 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
 
   MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in[$]; // refleja md_rx_data que alimentaron esta TX (pueden ser varias y/o fracciones)
   MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out[$]; // refleja md_tx_data que generaron esta TX (pueden ser varias y/o fracciones)
-  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_err_buffer[$];
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_err[$];
   
 
   function MD_pack2 #(ALGN_DATA_WIDTH) clone();
