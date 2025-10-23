@@ -506,7 +506,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         // Fragmenta si hace falta y anexa a la transacción
         frag = make_rx_fragment(head, rx_cursor, take);
         // Si tu MD_pack2 usa una cola dinámica:
-        if (tr.data_in.size() == 0) tr.data_in = new(0);
+        if (tr.data_in.size() == 0) tr.data_in = new();
         tr.data_in.push_back(frag);
 
         // Actualiza cursores
