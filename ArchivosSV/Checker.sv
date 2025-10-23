@@ -189,7 +189,7 @@ endfunction
       tx_s.data_out = pkt.data_out[i].data_out;
       tx_s.ctrl_offset = pkt.data_out[i].ctrl_offset;
       tx_s.ctrl_size = pkt.data_out[i].ctrl_size;
-      valid = is_align_valid(tx_s.ctrl_offset, tx_s.ctrl_size);
+      valid = is_align_valid(rx_s.offset, rx_s.size);
       if (valid) begin
         tx_bytes_count = $unsigned(tx_s.ctrl_size);
         emit_one_word_from_bytes(byte_stream, avail, tx_bytes_count, exp_one);
