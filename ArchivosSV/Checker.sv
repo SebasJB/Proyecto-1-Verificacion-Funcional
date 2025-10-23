@@ -66,20 +66,20 @@ function bit concat_one_from_pkt32 (
     off_out  = $unsigned(pkt.data_out[0].ctrl_offset);  // en bytes
 
     // Debug: mostrar lo que llegó
-    $display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
+    //$display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
            pkt.data_out[0].ctrl_size, pkt.data_out[0].ctrl_offset, pkt.data_out[0].data_out, pkt.data_in.size(), bytes_avail);
-    $display("[CHK] byte_stream=0x%08h  (bytes: %02x %02x %02x %02x)",
+    //$display("[CHK] byte_stream=0x%08h  (bytes: %02x %02x %02x %02x)",
            byte_stream,
            byte_stream[7:0], byte_stream[15:8],
            byte_stream[23:16], byte_stream[31:24]);
 
     // Validaciones mínimas
     if (need <= 0 || need > BYTES_W || ((BYTES_W + int'(off_out)) % int'(need)) != 0) begin
-      $error("[CHK] combinación inválida: need=%0d off=%0d (BYTES_W=%0d)", need, off_out, BYTES_W);
+      //$error("[CHK] combinación inválida: need=%0d off=%0d (BYTES_W=%0d)", need, off_out, BYTES_W);
       return '0;
     end
     if (bytes_avail < need) begin
-      $error("[CHK] insuficientes bytes en stream: need=%0d have=%0d", need, bytes_avail);
+      //$error("[CHK] insuficientes bytes en stream: need=%0d have=%0d", need, bytes_avail);
       return '0;
     end
 
@@ -95,7 +95,7 @@ function bit concat_one_from_pkt32 (
     exp_one.ctrl_offset = pkt.data_out[0].ctrl_offset;
   
 
-    $display("[CHK] EXPECTED: data=%h size=%0d off=%0d", exp_one.data_out, exp_one.ctrl_size, exp_one.ctrl_offset);
+    //$display("[CHK] EXPECTED: data=%h size=%0d off=%0d", exp_one.data_out, exp_one.ctrl_size, exp_one.ctrl_offset);
     return 1'b1;
 endfunction
 
@@ -199,9 +199,9 @@ endfunction
   end
 
   // DEBUG: imprimir flujo de bytes disponible
-  $write("[CHK] byte_stream(size=%0d) = [", byte_stream);
-  for (int k=0; k<31; k++) $write("%02x%s", byte_stream[k], (k+1==32)? "": " ");
-  $write("]\n");
+  //$write("[CHK] byte_stream(size=%0d) = [", byte_stream);
+  //for (int k=0; k<31; k++) $write("%02x%s", byte_stream[k], (k+1==32)? "": " ");
+  //$write("]\n");
 
   // 3) Armar UNA salida si hay bytes suficientes
   return 1'b1;
@@ -219,7 +219,7 @@ endfunction
     if (exp.ctrl_offset != got_data.ctrl_offset) ok = 0;
 
     if (!ok) begin
-      $error("[CHK] MISMATCH " | "exp_data=%h got_data=%h | "| "exp_size=%0d got_size=%0d | " | "exp_size=%0d got_size=%0d | " | "exp_off=%0d got_off=%0d", exp.data_out, got_data.data_out, exp.ctrl_size, got_data.ctrl_size, exp.ctrl_offset, got_data.ctrl_offset);
+      //$error("[CHK] MISMATCH " | "exp_data=%h got_data=%h | "| "exp_size=%0d got_size=%0d | " | "exp_size=%0d got_size=%0d | " | "exp_off=%0d got_off=%0d", exp.data_out, got_data.data_out, exp.ctrl_size, got_data.ctrl_size, exp.ctrl_offset, got_data.ctrl_offset);
     end
     return ok;
   endfunction
@@ -241,7 +241,7 @@ endfunction
       out_q = pkt.data_out;
       got_d = new();
 
-      $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
+      //$display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       n_checked++;
       have = build_expected_one(pkt, exp);
 
@@ -256,10 +256,10 @@ endfunction
         null_exp = new();
         if (compare_one(null_exp, got_d)) begin
           n_pass++;
-          $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
+          //$display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
         end else begin
           n_fail++;
-          $display("[CHK] #%0d FAIL (DUT emitió pero golden no tenía suficiente bytes)", n_checked);
+          //$display("[CHK] #%0d FAIL (DUT emitió pero golden no tenía suficiente bytes)", n_checked);
         end
         continue;
       end
@@ -267,16 +267,16 @@ endfunction
       // Para salidas válidas, el golden fija offset_out=0 y size_out=CTRL_SIZE
       if (compare_one(exp, got_d)) begin
         n_pass++;
-        $display("[CHK] #%0d OK (size=%0d)", n_checked, CTRL_SIZE);
+       // $display("[CHK] #%0d OK (size=%0d)", n_checked, CTRL_SIZE);
       end else begin
         n_fail++;
-        $display("[CHK] #%0d FAIL (size=%0d)", n_checked, CTRL_SIZE);
+        //$display("[CHK] #%0d FAIL (size=%0d)", n_checked, CTRL_SIZE);
       end
     end
   endtask
 
   function void report();
-    $display("[CHK] Resumen: checked=%0d pass=%0d fail=%0d", n_checked, n_pass, n_fail);
+    //$display("[CHK] Resumen: checked=%0d pass=%0d fail=%0d", n_checked, n_pass, n_fail);
   endfunction
 
 endclass
