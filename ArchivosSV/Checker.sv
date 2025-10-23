@@ -237,6 +237,7 @@ endfunction
       $display("[CHK] pkt=%p", pkt);
       out_q = pkt.data_out;
       got_d = new();
+      exp = new();
 
       $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       n_checked++;
