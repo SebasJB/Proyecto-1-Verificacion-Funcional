@@ -102,7 +102,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
     msMD_mailbox.put(trans.clone());
     mcMD_mailbox.put(trans.clone());
-    $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d bytes de entrada, %0d bytes de salida", trans.data_in.size(), trans.data_out.size());
+    $display("[MD_MON] Enviado paquete MD al scoreboard/checker: %0d datos de entrada, %0d datos de salida", trans.data_in.size(), trans.data_out.size());
   endtask
 
   task sample_rx_data();
@@ -196,7 +196,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
               tr.data_out[i] = tx_sample;
               tx_bytes_count += $unsigned(tx_sample.ctrl_size);
               i++;
-              //if ((tx_bytes_count + $unsigned(tx_sample.ctrl_size)) == bytes) break;
               @ev_tx_pushed;
               tx_sample = data_out_buffer.pop_front();
               
@@ -222,7 +221,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
-        while ((i < bytes)||(rx_bytes_count < BYTES_W)) begin
+        while ((rx_bytes_count < bytes)||( rx_bytes_count != bytes)) begin
           if (!rx_sample.err) begin
             rx_bytes_count += $unsigned(rx_sample.size);
             tr.data_in[i] = rx_sample;
