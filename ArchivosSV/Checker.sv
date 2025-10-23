@@ -120,8 +120,8 @@ endfunction
 
   
    function automatic bit is_align_valid(
-      input logic [ALGN_OFFSET_WIDTH-1:0] offset_b,
-      input logic [ALGN_SIZE_WIDTH-1:0]   size_b
+      input int unsigned [ALGN_OFFSET_WIDTH-1:0] offset_b,
+      input int unsigned [ALGN_SIZE_WIDTH-1:0]   size_b
   );
     if (size_b == 0 || size_b > BYTES_W[ALGN_SIZE_WIDTH-1:0]) return 1'b0;
     if (offset_b >= BYTES_W[ALGN_OFFSET_WIDTH-1:0])           return 1'b0;
@@ -189,7 +189,7 @@ endfunction
       tx_s.data_out = pkt.data_out[i].data_out;
       tx_s.ctrl_offset = pkt.data_out[i].ctrl_offset;
       tx_s.ctrl_size = pkt.data_out[i].ctrl_size;
-      valid = is_align_valid(rx_s.offset, rx_s.size);
+      valid = is_align_valid($unsigned(rx_s.offset), $unsigned(rx_s.size));
       if (valid) begin
         tx_bytes_count = $unsigned(tx_s.ctrl_size);
         emit_one_word_from_bytes(byte_stream, avail, tx_bytes_count, exp_one);
