@@ -208,7 +208,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           i++;
         end
         @(posedge vif.clk);
-        $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), tx_bytes_count);
+        $display("[MD_MON] Enviado paquete MD al checker: RX(size=%0d,data=%h) TX(samples=%0d) Bytes count: %0d", tr.data_in[0].ctrl_size, tr.data_in[0].data_out, tr.data_out.size(), tx_bytes_count);
         foreach (tr.data_in[i]) begin
           $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
         end
