@@ -67,7 +67,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Mutex para proteger acceso a las colas
-  semaphore sem_buf = new(1);
+  semaphore sem_buf = new(2);
   event ev_rx_pushed, ev_tx_pushed;
 
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
@@ -152,7 +152,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (change_rx) begin
           // CAPTURA una sola muestra COMPLETA
-          sem_buf.get();
+          sem_buf.get(1);
           sample = new();
           sample.data_in = vif.md_rx_data;
           sample.offset  = vif.md_rx_offset;
@@ -165,7 +165,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
           @(posedge vif.clk);
           -> ev_rx_pushed;
-          sem_buf.put();
+          sem_buf.put(1);
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
           last_offset_rx = vif.md_rx_offset;
@@ -190,7 +190,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       vif.md_tx_err    !== last_err_tx);
       if (change_tx) begin
         
-        sem_buf.get();
+        sem_buf.get(1);
         sample = new();
         sample.data_out = vif.md_tx_data;
         sample.ctrl_offset = vif.md_tx_offset;
@@ -201,7 +201,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
         @(posedge vif.clk);
         -> ev_tx_pushed;
-        sem_buf.put();
+        sem_buf.put(1);
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
         last_offset_tx = vif.md_tx_offset;
@@ -224,10 +224,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (rx_sample.size > tx_sample.ctrl_size) begin
         while(tx_bytes_count < rx_sample.size) begin
-          sem_buf.get();
+          sem_buf.get(1);
           @ev_tx_pushed;
           tx_bytes_count =+ tx_sample.ctrl_size;
-          sem_buf.put();
+          sem_buf.put(1);
         end
         tr = new();
         tr.data_in[0] = rx_sample;
@@ -247,10 +247,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       else begin
         
         while (rx_bytes_count < tx_sample.ctrl_size) begin
-          sem_buf.get();
+          sem_buf.get(1);
           @ev_rx_pushed;
           rx_bytes_count =+ rx_sample.size;
-          sem_buf.put();
+          sem_buf.put(1);
         end
         tr = new();
         tr.data_out[0] = tx_sample;
