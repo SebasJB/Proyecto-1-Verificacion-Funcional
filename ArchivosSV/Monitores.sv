@@ -44,6 +44,7 @@ class APB_Monitor;
   endtask
 endclass
 
+
 // ====================================================
 // MD Monitor (para MD_if, lado TX del Aligner)
 // - Muestrea *solo* en handshake válido: md_tx_valid && md_tx_ready
@@ -57,6 +58,7 @@ endclass
 // - Reporta handshakes (MD_EVT_HANDSHAKE) cuando (md_tx_valid && md_tx_ready).
 // - Publica a msMD_mailbox (scoreboard) y mcMD_mailbox (checker).
 // ----------------------------------------------------
+/*
 class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Interfaz virtual (tu MD_if)
@@ -96,39 +98,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   int unsigned rx_bytes_count;
   int unsigned tx_bytes_count;
   
-
-
-
-  /*
-  function void consume_rx_bytes(ref MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$], MD_pack2 #(ALGN_DATA_WIDTH) trans);
-    int unsigned bytes_to_consume = rx_bytes_available();
-    bit num_err = 0;
-    MD_Rx_Sample #(ALGN_DATA_WIDTH) current_sample;
-    int unsigned sample_bytes;
-    while (bytes_to_consume > 0) begin
-      if (rx_fifo.size() == 0) begin
-        $fatal(1, "No hay suficientes datos en el buffer RX para consumir %0d bytes", bytes_to_consume);
-      end     
-      current_sample = rx_fifo[0];
-      sample_bytes = (bytes_to_consume <= current_sample.size) ? bytes_to_consume : current_sample.size;
-      $display("[MD_MON] Consumiendo %0d bytes del sample con %0d bytes restantes", sample_bytes, current_sample.size);
-      if (bytes_to_consume == 0) begin
-        rx_fifo.pop_front();
-        continue;
-      end
-
-      num_err |= current_sample.err;
-      trans.data_in.push_back(current_sample);
-      bytes_to_consume -= sample_bytes;
-
-      //Mantener la coherencia de la cola
-      if (bytes_to_consume == 0) begin
-        rx_fifo.pop_front();
-      end else begin
-        rx_fifo[0] = current_sample;
-      end
-    end
-  endfunction */
 
   task send_transaction(ref MD_pack2 #(ALGN_DATA_WIDTH) trans);
     msMD_mailbox.put(trans.clone());
@@ -281,76 +250,292 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       sample_tx_data();
       aligner();
     join_none
+  endtask 
+endclass */
+
+// ----------------------------------------------------
+// MD Monitor (para MD_if)
+// - Captura en RX y TX cada vez que cambia VALID o el contenido (data/offset/size/err).
+// - Para el CHECKER/Scoreboard arma transacciones donde cada TX consume exactamente
+//   ctrl_size bytes de las entradas RX, respetando offset y orden de bytes.
+// - Soporta N→1 y 1→N (p. ej. size=4 vs size=1).
+// ----------------------------------------------------
+class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
+
+  // ===== Interfaz y canalización =====
+  virtual MD_if #(ALGN_DATA_WIDTH) vif;
+
+  // Mailboxes requeridos
+  mailbox msMD_mailbox; // Monitor → scoreboard
+  mailbox mcMD_mailbox; // Monitor → checker
+
+  // Sincronización
+  semaphore sem_buf = new(1);
+  event ev_rx_pushed, ev_tx_pushed;
+
+  // Parámetros derivados
+  localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
+  localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
+  localparam int ALGN_SIZE_WIDTH   = $clog2(ALGN_DATA_WIDTH/8) + 1;
+
+  // Buffers (muestras “crudas” que captura el sampler)
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_buffer[$];
+  MD_Tx_Sample #(ALGN_DATA_WIDTH) data_out_buffer[$];
+
+  // FIFO interno del ALigner (para “cortar” RX si hace falta)
+  MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_fifo[$];
+  int unsigned rx_cursor = 0; // bytes ya consumidos del sample rx_fifo[0]
+
+  // Últimos valores observados (para detectar cambios)
+  // RX
+  bit [ALGN_DATA_WIDTH-1:0]   last_data_rx;
+  bit [ALGN_OFFSET_WIDTH-1:0] last_offset_rx;
+  bit [ALGN_SIZE_WIDTH-1:0]   last_size_rx;
+  bit                         last_err_rx;
+  bit                         last_valid_rx;
+
+  // TX
+  bit [ALGN_DATA_WIDTH-1:0]   last_data_tx;
+  bit [ALGN_OFFSET_WIDTH-1:0] last_offset_tx;
+  bit [ALGN_SIZE_WIDTH-1:0]   last_size_tx;
+  bit                         last_err_tx;
+  bit                         last_valid_tx;
+
+  // Contadores informativos
+  int unsigned rx_bytes_count;
+  int unsigned tx_bytes_count;
+
+  // ====== Helpers ======
+
+  // Devuelve un byte del bus "data" en el lane "lane_idx" (0..BYTES_W-1)
+  function automatic logic [7:0] get_lane_byte(bit [ALGN_DATA_WIDTH-1:0] data, int lane_idx);
+    return data >> (8*lane_idx);
+  endfunction
+
+  // Crea un fragmento RX con 'count' bytes desde el sample 'src', empezando en 'start_byte'
+  // Respeta los lanes originales (offset + start_byte + j).
+  function automatic MD_Rx_Sample #(ALGN_DATA_WIDTH)
+    make_rx_fragment(MD_Rx_Sample #(ALGN_DATA_WIDTH) src,
+                     int unsigned start_byte,
+                     int unsigned count);
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) frag = new();
+    bit [ALGN_DATA_WIDTH-1:0] packed = '0;
+
+    for (int j = 0; j < count; j++) begin
+      int lane = src.offset + start_byte + j;
+      logic [7:0] b = get_lane_byte(src.data_in, lane);
+      packed[(8*lane)+:8] = b;
+    end
+
+    frag.data_in = packed;
+    frag.offset  = src.offset + start_byte;
+    frag.size    = count[ALGN_SIZE_WIDTH-1:0];
+    frag.err     = src.err;
+    frag.t_sample= src.t_sample; // si tu struct lo trae
+    return frag;
+  endfunction
+
+  // Envía transacción a scoreboard y checker
+  function automatic void send_transaction(MD_pack2 #(ALGN_DATA_WIDTH) tr);
+    // Si tu clase tiene clone(), cámbialo por put(tr.clone())
+    msMD_mailbox.put(tr);
+    mcMD_mailbox.put(tr);
+  endfunction
+
+  // ====== Constructor ======
+  function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
+               mailbox msMD_mailbox,
+               mailbox mcMD_mailbox);
+    this.vif = vif;
+    this.msMD_mailbox = msMD_mailbox;
+    this.mcMD_mailbox = mcMD_mailbox;
+  endfunction
+
+  // ====== API de arranque ======
+  task run();
+    fork
+      sample_rx_data();
+      sample_tx_data();
+      aligner();
+    join_none
   endtask
 
-
-  /*task run();
-    // Política de aceptar siempre
-    vif.md_tx_ready = 1'b1;
-
-    // Sin señal de reset en la interface, arrancamos tras un ciclo
-    @(posedge vif.clk);
-    // Inicializa referencia del primer dato observado
-    last_data = vif.md_tx_data;
-    last_offset = vif.md_tx_offset;
-    last_size = vif.md_tx_size;
-    last_err = vif.md_tx_err;
-    t_data_start = $time;
+  // ====== Sampler RX ======
+  task sample_rx_data();
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) s;
+    // Inicializa “last”
+    last_data_rx   = '0;
+    last_offset_rx = '0;
+    last_size_rx   = '0;
+    last_err_rx    = '0;
+    last_valid_rx  = 1'b0;
 
     forever begin
       @(posedge vif.clk);
-      // === 2) Detección de CAMBIO DE DATO (aunque no haya handshake) ===
 
+      bit valid_toggled  = (vif.md_rx_valid !== last_valid_rx);
+      bit content_change = vif.md_rx_valid && (
+                              (vif.md_rx_data   !== last_data_rx  ) ||
+                              (vif.md_rx_offset !== last_offset_rx) ||
+                              (vif.md_rx_size   !== last_size_rx  ) ||
+                              (vif.md_rx_err    !== last_err_rx   )
+                            );
 
-      if ((vif.md_tx_data != last_data) & vif.md_tx_valid) begin
-        // Cierra el "dato activo" anterior
-        MD_pack2#(ALGN_DATA_WIDTH) change_tr = new();
-        change_tr.data = vif.md_tx_data;
-        change_tr.offset = vif.md_tx_offset;
-        change_tr.size = vif.md_tx_size;
-        change_tr.err = vif.md_tx_err;
-        change_tr.t_sample = t_data_start;
-        change_tr.md_t_time = ($time - t_data_start);
+      if (valid_toggled || content_change) begin
+        if (vif.md_rx_valid) begin
+          // Capturamos SOLO cuando valid=1
+          s = new();
+          s.data_in  = vif.md_rx_data;
+          s.offset   = vif.md_rx_offset;
+          s.size     = vif.md_rx_size;
+          s.err      = vif.md_rx_err;
+          s.t_sample = $time;
 
-        // Publica duración del dato anterior
-        msMD_mailbox.put(change_tr.clone());
-        //mcMD_mailbox.put(change_tr.clone());
+          sem_buf.get();
+            data_in_buffer.push_back(s);
+          sem_buf.put();
+          -> ev_rx_pushed;
 
-        // Inicia nuevo "dato activo"
-        last_data = vif.md_tx_data;
-        last_offset = vif.md_tx_offset;
-        last_size = vif.md_tx_size;
-        last_err = vif.md_tx_err;
-        t_data_start = $time;
-      end
-      // === 1) Reporte de HANDSHAKE (valid && ready) ===
-      else if (vif.md_tx_valid) begin
-        MD_pack2#(ALGN_DATA_WIDTH) handshake_tr = new();
-        handshake_tr.data = vif.md_tx_data;
-        handshake_tr.offset = vif.md_tx_offset;
-        handshake_tr.size = vif.md_tx_size;
-        handshake_tr.err = vif.md_tx_err;
-        handshake_tr.t_sample = t_data_start;
-        handshake_tr.md_t_time = ($time - t_data_start); // duración desde el último cambio
-        msMD_mailbox.put(handshake_tr.clone());
-        //mcMD_mailbox.put(handshake_tr.clone());
-        // Reinicia medición del dato actual
-        last_data = vif.md_tx_data;
-        last_offset = vif.md_tx_offset;
-        last_size = vif.md_tx_size;
-        last_err = vif.md_tx_err;
-        t_data_start = $time;
+          rx_bytes_count += s.size; // (corrige tu "=+" por "+=")
+        end
 
-      end
-      // === 3) No hay cambio ni handshake ===
-    
-
-      else begin
-        // Se mantiene actualizados offset/size/err (por si varían sin cambio de data)
-        last_offset = vif.md_tx_offset;
-        last_size = vif.md_tx_size;
-        last_err = vif.md_tx_err;
+        // Actualiza “last” SIEMPRE para detectar toggles y cambios
+        last_data_rx   = vif.md_rx_data;
+        last_offset_rx = vif.md_rx_offset;
+        last_size_rx   = vif.md_rx_size;
+        last_err_rx    = vif.md_rx_err;
+        last_valid_rx  = vif.md_rx_valid;
       end
     end
-  endtask*/
+  endtask
+
+  // ====== Sampler TX ======
+  task sample_tx_data();
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) s;
+    last_data_tx   = '0;
+    last_offset_tx = '0;
+    last_size_tx   = '0;
+    last_err_tx    = '0;
+    last_valid_tx  = 1'b0;
+
+    forever begin
+      @(posedge vif.clk);
+
+      bit valid_toggled  = (vif.md_tx_valid !== last_valid_tx);
+      bit content_change = vif.md_tx_valid && (
+                              (vif.md_tx_data   !== last_data_tx  ) ||
+                              (vif.md_tx_offset !== last_offset_tx) ||
+                              (vif.md_tx_size   !== last_size_tx  ) ||
+                              (vif.md_tx_err    !== last_err_tx   )
+                            );
+
+      if (valid_toggled || content_change) begin
+        if (vif.md_tx_valid) begin
+          s = new();
+          s.data_out    = vif.md_tx_data;
+          s.ctrl_offset = vif.md_tx_offset;
+          s.ctrl_size   = vif.md_tx_size;
+          s.err         = vif.md_tx_err;
+          s.t_sample    = $time;
+
+          sem_buf.get();
+            data_out_buffer.push_back(s);
+          sem_buf.put();
+          -> ev_tx_pushed;
+
+          tx_bytes_count += s.ctrl_size;
+        end
+
+        last_data_tx   = vif.md_tx_data;
+        last_offset_tx = vif.md_tx_offset;
+        last_size_tx   = vif.md_tx_size;
+        last_err_tx    = vif.md_tx_err;
+        last_valid_tx  = vif.md_tx_valid;
+      end
+    end
+  endtask
+
+  // ====== Aligner (TX-centrico, consume bytes RX según ctrl_size) ======
+  task aligner();
+    MD_pack2 #(ALGN_DATA_WIDTH) tr;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) tx;
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) head;
+    int unsigned need, avail, take;
+
+    forever begin
+      // 1) Espera TX disponible
+      if (data_out_buffer.size() == 0) @ev_tx_pushed;
+
+      sem_buf.get();
+        tx = data_out_buffer.pop_front();
+      sem_buf.put();
+
+      // 2) Para cada TX, consumir EXACTAMENTE ctrl_size bytes del flujo RX
+      need = int'(tx.ctrl_size);
+      if (need == 0 || need > BYTES_W) begin
+        $error("[MD_MON] ctrl_size inválido (%0d). BYTES_W=%0d", need, BYTES_W);
+        continue;
+      end
+
+      tr = new();
+      // nota: algunos MD_pack2 tienen data_out[] (dinámico). Si el tuyo es un solo campo, ajusta:
+      tr.data_out = new[1];
+      tr.data_out[0] = tx;
+
+      // Asegura disponibilidad de RX suficientes, trayendo del sampler a rx_fifo
+      // y esperando nuevos si hace falta
+      while (need > 0) begin
+        // rellenar rx_fifo desde data_in_buffer cuando esté vacío
+        if (rx_fifo.size() == 0) begin
+          if (data_in_buffer.size() == 0) begin
+            @ev_rx_pushed;
+          end
+          sem_buf.get();
+            while (data_in_buffer.size() != 0)
+              rx_fifo.push_back(data_in_buffer.pop_front());
+          sem_buf.put();
+        end
+
+        head  = rx_fifo[0];
+        avail = int'(head.size) - rx_cursor;
+        if (avail <= 0) begin
+          // debería significar que consumimos todo: avanzar
+          rx_fifo.pop_front();
+          rx_cursor = 0;
+          continue;
+        end
+
+        take = (need <= avail) ? need : avail;
+
+        // Fragmenta si hace falta y anexa a la transacción
+        MD_Rx_Sample #(ALGN_DATA_WIDTH) frag = make_rx_fragment(head, rx_cursor, take);
+        // Si tu MD_pack2 usa una cola dinámica:
+        if (tr.data_in.size() == 0) tr.data_in = new[0];
+        tr.data_in.push_back(frag);
+
+        // Actualiza cursores
+        rx_cursor += take;
+        need      -= take;
+
+        if (rx_cursor == int'(head.size)) begin
+          rx_fifo.pop_front();
+          rx_cursor = 0;
+        end
+      end // while need
+
+      // 3) (Opcional) Puedes copiar meta a nivel de transacción si tu MD_pack2 lo tiene
+      // tr.offset_out = tx.ctrl_offset;
+      // tr.size_out   = tx.ctrl_size;
+      // tr.err        = tx.err;
+
+      // 4) Publica
+      send_transaction(tr);
+
+      // 5) Mensajería de debug (opcional)
+      // $display("[MD_MON] TX(size=%0d, off=%0d) -> %0d fragmentos RX",
+      //          tx.ctrl_size, tx.ctrl_offset, tr.data_in.size());
+    end // forever
+  endtask
+
 endclass
+
