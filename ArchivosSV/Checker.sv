@@ -227,7 +227,7 @@ endfunction
     MD_Tx_Sample #(ALGN_DATA_WIDTH) exp;
     bit have;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) got_d;
-    MD_Tx_Sample #(ALGN_DATA_WIDTH) out_q;
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) out_q [$];
     logic [ALGN_SIZE_WIDTH-1:0] got_sz;
     logic [ALGN_OFFSET_WIDTH-1:0] got_off;
 
@@ -249,7 +249,7 @@ endfunction
       got_off = got_d.ctrl_offset;
 
       if (!have) begin
-        MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
+        MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp= new();
         if (compare_one(null_exp, got_d)) begin
           n_pass++;
           $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
