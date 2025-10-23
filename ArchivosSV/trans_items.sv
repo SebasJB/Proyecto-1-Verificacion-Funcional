@@ -332,7 +332,7 @@ class MD_Tx_Sample #(int ALGN_DATA_WIDTH = 32);
   localparam int ALGN_SIZE_WIDTH = $clog2(ALGN_DATA_WIDTH/8) + 1;
   bit [ALGN_DATA_WIDTH-1:0] data_out;
   bit [ALGN_OFFSET_WIDTH-1:0] ctrl_offset;
-  bit logic [ALGN_SIZE_WIDTH-1:0] ctrl_size;
+  bit [ALGN_SIZE_WIDTH-1:0] ctrl_size;
   time t_sample; // tiempo del muestreo válido
   function new();
     data_out = '0;
