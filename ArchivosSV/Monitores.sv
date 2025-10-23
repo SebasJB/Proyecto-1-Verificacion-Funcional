@@ -69,7 +69,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Mutex para proteger acceso a las colas
-  semaphore sem_buf = new();
+  semaphore sem_buf = new(1);
   event ev_rx_pushed, ev_tx_pushed;
 
   localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
@@ -122,7 +122,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (change_rx) begin
           // CAPTURA una sola muestra COMPLETA
-          sem_buf.get();
+          
           sample = new();
           sample.data_in = vif.md_rx_data;
           sample.offset  = vif.md_rx_offset;
@@ -130,6 +130,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
           
+          sem_buf.get();
           data_in_buffer.push_back(sample);
           rx_bytes_count += sample.size;
 
@@ -160,13 +161,14 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       vif.md_tx_err    !== last_err_tx);
       if (change_tx) begin
         
-        sem_buf.get();
+        
         sample = new();
         sample.data_out = vif.md_tx_data;
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
 
+        sem_buf.get();
         data_out_buffer.push_back(sample);
         tx_bytes_count += sample.ctrl_size;
 
