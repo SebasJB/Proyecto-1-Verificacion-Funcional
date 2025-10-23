@@ -203,11 +203,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
         while((tx_bytes_count < bytes)|| (i < BYTES_W)) begin
-          @ev_tx_pushed;
-          tx_sample = data_out_buffer.pop_front();
           tx_bytes_count += $unsigned(tx_sample.ctrl_size);
           tr.data_out[i] = tx_sample;
           i++;
+          @ev_tx_pushed;
+          tx_sample = data_out_buffer.pop_front();
         end
         @(posedge vif.clk);
         $display("[MD_MON] Enviado paquete MD al checker: RX(size=%0d,data=%h) TX(samples=%0d) Bytes count: %0d", tr.data_in[0].size, tr.data_in[0].data_in, tr.data_out.size(), tx_bytes_count);
@@ -225,11 +225,11 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
         while ((rx_bytes_count < bytes)||(i < BYTES_W)) begin
-          @ev_rx_pushed;
-          rx_sample = data_in_buffer.pop_front();
           rx_bytes_count += $unsigned(rx_sample.size);
           tr.data_in[i] = rx_sample;
           i++;
+          @ev_rx_pushed;
+          rx_sample = data_in_buffer.pop_front();
         end
         @(posedge vif.clk);
          $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), rx_bytes_count);
