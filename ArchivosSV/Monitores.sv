@@ -130,7 +130,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
           data_in_buffer.push_back(sample);
-          (@posedge vif.clk);
+          @(posedge vif.clk);
           sem_buf.put();
           -> ev_rx_pushed;
           // actualiza "last" después de capturar
@@ -163,7 +163,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
         data_out_buffer.push_back(sample);
-        (@posedge vif.clk);
+        @(posedge vif.clk);
         sem_buf.put();
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
