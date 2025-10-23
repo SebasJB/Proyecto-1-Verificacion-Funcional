@@ -319,17 +319,17 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
                      int unsigned start_byte,
                      int unsigned count);
     MD_Rx_Sample #(ALGN_DATA_WIDTH) frag;
-    bit [ALGN_DATA_WIDTH-1:0] packed;
-    packed = '0;
+    bit [ALGN_DATA_WIDTH-1:0] empaquetado;
+    empaquetado = '0;
     frag = new();
 
     for (int j = 0; j < count; j++) begin
       int lane = src.offset + start_byte + j;
       logic [7:0] b = get_lane_byte(src.data_in, lane);
-      packed[(8*lane)+:8] = b;
+      empaquetado[(8*lane)+:8] = b;
     end
 
-    frag.data_in = packed;
+    frag.data_in = empaquetado;
     frag.offset  = src.offset + start_byte;
     frag.size    = count[ALGN_SIZE_WIDTH-1:0];
     frag.err     = src.err;
