@@ -120,8 +120,8 @@ endfunction
 
   
    function automatic bit is_align_valid(
-      input int unsigned [ALGN_OFFSET_WIDTH-1:0] offset_b,
-      input int unsigned [ALGN_SIZE_WIDTH-1:0]   size_b
+      input logic [ALGN_OFFSET_WIDTH-1:0] offset_b,
+      input logic [ALGN_SIZE_WIDTH-1:0]   size_b
   );
     if (size_b == 0 || size_b > BYTES_W[ALGN_SIZE_WIDTH-1:0]) return 1'b0;
     if (offset_b >= BYTES_W[ALGN_OFFSET_WIDTH-1:0])           return 1'b0;
