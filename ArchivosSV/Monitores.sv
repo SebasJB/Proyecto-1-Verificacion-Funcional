@@ -233,7 +233,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
             rx_bytes_count += $unsigned(rx_sample.size);
             tr.data_in[i] = rx_sample;
             i++;
-            @ev_rx_pushed;
+            if (data_in_buffer.size() == 0) @ev_rx_pushed;
             rx_sample = data_in_buffer.pop_front(); 
           end
           else begin
