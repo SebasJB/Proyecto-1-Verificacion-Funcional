@@ -190,7 +190,7 @@ endfunction
       valid = is_align_valid(tx_s.ctrl_offset, tx_s.ctrl_size);
       if (valid) begin
         tx_bytes_count = $unsigned(tx_s.ctrl_size);
-        emit_one_word_from_bytes(rx_s, avail, tx_bytes_count, exp_one);
+        emit_one_word_from_bytes(rx_s.data_in, avail, tx_bytes_count, exp_one);
       end
     end
     
