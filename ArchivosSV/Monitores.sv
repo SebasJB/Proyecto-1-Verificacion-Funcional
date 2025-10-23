@@ -212,6 +212,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         foreach (tr.data_out[i]) begin
           $display("  [TX%0d] data=%h off=%0d size=%0d", i, tr.data_out[i].data_out, tr.data_out[i].ctrl_offset, tr.data_out[i].ctrl_size);
         end
+        foreach (tr.data_in[i]) begin
+          $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
+          end
         send_transaction(tr);
         tx_bytes_count = 0;
         i = 0;
@@ -234,6 +237,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
          foreach (tr.data_in[i]) begin
           $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
           end
+          foreach (tr.data_out[i]) begin
+          $display("  [TX%0d] data=%h off=%0d size=%0d", i, tr.data_out[i].data_out, tr.data_out[i].ctrl_offset, tr.data_out[i].ctrl_size);
+        end
         send_transaction(tr);
         rx_bytes_count = 0;
         i = 0;
