@@ -464,6 +464,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   // ====== Aligner (TX-centrico, consume bytes RX según ctrl_size) ======
   task aligner();
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) frag;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) tx;
     MD_Rx_Sample #(ALGN_DATA_WIDTH) head;
     int unsigned need, avail, take;
@@ -514,7 +515,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         take = (need <= avail) ? need : avail;
 
         // Fragmenta si hace falta y anexa a la transacción
-        MD_Rx_Sample #(ALGN_DATA_WIDTH) frag = make_rx_fragment(head, rx_cursor, take);
+        frag = make_rx_fragment(head, rx_cursor, take);
         // Si tu MD_pack2 usa una cola dinámica:
         if (tr.data_in.size() == 0) tr.data_in = new[0];
         tr.data_in.push_back(frag);
