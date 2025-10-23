@@ -168,7 +168,7 @@ endfunction
       byte_stream = '0;
       foreach (pkt.data_in[i]) begin
         rx_s = new();
-        data_in_q[i] = pkt.data_in[i].data_in;
+        data_in_q[i] = pkt.data_in[i];
         rx_s.offset = pkt.data_in[i].offset;
         rx_s.size   = pkt.data_in[i].size;
         valid = is_align_valid(rx_s.offset, rx_s.size);
