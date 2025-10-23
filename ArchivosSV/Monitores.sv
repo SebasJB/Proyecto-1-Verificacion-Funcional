@@ -114,7 +114,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     forever begin
       
       @(posedge vif.clk);
-      change_rx = vif.md_rx_valid && vif.md_rx_ready;
+      change_rx = vif.md_rx_valid && vif.md_rx_ready &&
            (vif.md_rx_data   !== last_data_rx   ||
             vif.md_rx_offset !== last_offset_rx ||
             vif.md_rx_size   !== last_size_rx   ||
