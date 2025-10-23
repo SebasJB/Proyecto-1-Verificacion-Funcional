@@ -70,7 +70,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Mutex para proteger acceso a las colas
   semaphore sem_buf = new(1);
-  event ev_rx_pushed, ev_tx_pushed, aligned_tx,
+  event ev_rx_pushed, ev_tx_pushed;
 
   localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
