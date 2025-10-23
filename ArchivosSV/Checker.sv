@@ -30,7 +30,7 @@ class Checker #(int ALGN_DATA_WIDTH = 32);
 // para formar UNA salida esperada desde MD_pack2.
 // Devuelve 1 si pudo formarla (hubo >= need bytes), 0 si no.
 // ==========================================================
-function automatic bit concat_one_from_pkt32 (
+function bit concat_one_from_pkt32 (
   MD_pack2 # (ALGN_DATA_WIDTH) pkt,
   MD_Rx_Sample data_in_q[$],
   output MD_Tx_Sample exp_one,    // salida esperada (clase)
@@ -100,7 +100,7 @@ endfunction
 
 
   // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
-  function automatic void emit_one_word_from_bytes(
+  function void emit_one_word_from_bytes(
       inout bit [ALGN_DATA_WIDTH-1:0] byte_stream,
       input int unsigned rx_num,  
       input int unsigned ctrl_size_bytes,                  // entrada/salida
@@ -208,8 +208,8 @@ endfunction
   
   // ---- Comparación 1:1 contra lo observado en el paquete
   function automatic bit compare_one(
-      input MD_Tx_Sample exp,
-      input MD_Tx_Sample got_data
+      ref MD_Tx_Sample exp,
+      ref MD_Tx_Sample got_data
   );
     bit ok = 1;
     if (exp.data_out != got_data.data_out) ok = 0;
