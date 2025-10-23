@@ -163,7 +163,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           data_in_buffer.push_back(sample);
           rx_bytes_count += sample.size;
 
-          repeat(2) (@posedge vif.clk);
+          repeat(2); @(posedge vif.clk);
           -> ev_rx_pushed;
           sem_buf.put();
           // actualiza "last" después de capturar
@@ -199,7 +199,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         data_out_buffer.push_back(sample);
         tx_bytes_count += sample.ctrl_size;
 
-        repeat(2) (@posedge vif.clk);
+        repeat(2); @(posedge vif.clk);
         -> ev_tx_pushed;
         sem_buf.put();
         // actualiza "last" después de capturar
