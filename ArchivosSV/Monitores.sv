@@ -128,9 +128,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sample.size    = vif.md_rx_size;
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
-          sem_buf.get();
           data_in_buffer.push_back(sample);
-          sem_buf.put();
           -> ev_rx_pushed;
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
@@ -161,9 +159,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
-        sem_buf.get();
         data_out_buffer.push_back(sample);
-        sem_buf.put();
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
@@ -258,6 +254,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
       end
       else begin
+        if (data_out_buffer.size() == 0) @ev_rx_pushed;
         if (!rx_sample.err) begin
           tr.data_in[0] = rx_sample;
           tr.data_out[0] = tx_sample;
