@@ -12,6 +12,7 @@ class Checker #(int W = ALGN_DATA_WIDTH);
 
   // Métricas
   int unsigned n_checked, n_pass, n_fail;
+  
 
   // ---- helper: clase RX -> struct simple
   /*
@@ -23,6 +24,95 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     return s;
   endfunction
   */ 
+  // ==========================================================
+// concat_one_from_pkt32 : usa un "byte_stream" de 32 bits
+// para formar UNA salida esperada desde MD_pack2.
+// Devuelve 1 si pudo formarla (hubo >= need bytes), 0 si no.
+// ==========================================================
+function automatic bit concat_one_from_pkt32 #(ALGN_DATA_WIDTH = 32)(
+  input data_in_q[$],
+  ref MD_Tx_Sample #(ALGN_DATA_WIDTH) exp_one,    // salida esperada (clase)
+  output int unsigned bytes_avail // bytes metidos en byte_stream
+);
+
+    localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
+    bit [ALGN_DATA_WIDTH-1:0] byte_stream = '0; 
+
+
+    // ---------- 1) Aplanar entradas a byte_stream (LSB-first) ----------
+    // Recorre cada muestra de entrada y copia sus 'size' bytes
+    // empezando en 'offset' al stream en orden de llegada.
+    foreach (data_in_q[i]) begin
+      int o = data_in_q[i].offset;
+      int s = $unsigned(data_in_q[i].size);
+
+
+      // Recorta si ya llenamos 4 bytes
+      for (int b = 0; (b < s) && (bytes_avail < BYTES_W); b++ ) begin
+        byte_stream[8*bytes_avail +: 8] = pkt.data_in[i].data_in[8*(o+b) +: 8];
+        bytes_avail++;
+      end
+      if (bytes_avail == BYTES_W) break; // stream de 32b lleno
+    end
+
+    // ---------- 2) Necesidad de salida según el DUT ----------
+    int need = pkt.data_out[0].ctrl_size;    // en bytes
+    int off_out  = pkt.data_out[0].ctrl_offset;  // en bytes
+
+    // Debug: mostrar lo que llegó
+    $display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
+           pkt.size_out, pkt.offset_out, pkt.data_out.data_out, pkt.data_in.size(), bytes_avail);
+    $display("[CHK] byte_stream=0x%08h  (bytes: %02x %02x %02x %02x)",
+           byte_stream,
+           byte_stream[7:0], byte_stream[15:8],
+           byte_stream[23:16], byte_stream[31:24]);
+
+    // Validaciones mínimas
+    if (need <= 0 || need > BYTES_W || BYTES_W + int'(off_out)) % int'(need)) == 0) begin
+      $error("[CHK] combinación inválida: need=%0d off=%0d (BYTES_W=%0d)", need, off_out, BYTES_W);
+      break
+    end
+    if (bytes_avail < need) begin
+      $error("[CHK] insuficientes bytes en stream: need=%0d have=%0d", need, bytes_avail);
+      break
+    end
+
+    // ---------- 3) Construir palabra esperada colocando bytes en offset ----------
+    bit [ALGN_DATA_WIDTH-1:0] expected = '0;
+    for (int j = 0; j < need; j++) begin
+      expected[8*(off_out + j) +: 8] = byte_stream[8*j +: 8];
+    end
+
+    // ---------- 4) Llenar la clase de salida ----------
+    exp_one = new();
+    exp_one.data_out = expected;
+    exp_one.ctrl_size = pkt.data_out[0].ctrl_size;
+    exp_one.ctrl_offset = pkt.data_out[0].ctrl_offset;
+  
+
+    $display("[CHK] EXPECTED: data=%h size=%0d off=%0d", exp_one.data_out, exp_one.ctrl_size, exp_one.ctrl_offset);
+    return byte_stream;
+endfunction
+
+
+  // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
+  function automatic void emit_one_word_from_bytes(
+      input bit byte_stream[$],  
+      input int unsigned ctrl_size_bytes,                  // entrada/salida
+      output MD_Tx_Sample #(ALGN_DATA_WIDTH) out_one
+  );
+
+    if (ctrl_size_bytes <= 0 || ctrl_size_bytes > BYTES_W) return;
+    if (byte_stream.size() < ctrl_size_bytes)               return;
+
+    // Empaquetar los primeros ctrl_size_bytes en LSBs
+    for (int i = 0; i < ctrl_size_bytes; i++) begin
+      out_one.data_out[8*i +: 8] = byte_stream[8*i +: 8];
+      byte_stream[8*i +: 8] = 8'b0; // Consumirlos del stream
+    end
+  endfunction
+
+  
    function automatic bit is_align_valid(
       input logic [ALGN_OFFSET_WIDTH-1:0] offset_b,
       input logic [ALGN_SIZE_WIDTH-1:0]   size_b
@@ -31,44 +121,73 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     if (offset_b >= BYTES_W[ALGN_OFFSET_WIDTH-1:0])           return 1'b0;
     return (((BYTES_W + int'(offset_b)) % int'(size_b)) == 0);
   endfunction
-
+  /*
   // ---------- Extraer ventana de bytes válido -> cola de bytes ----------
   function automatic void append_valid_window_bytes(
-      input  MD_Rx_Sample in_s,
-      ref input byte byte_stream[$]   // se va llenando con bytes válidos
+      input MD_Rx_Sample in_s,
+      ref bit byte_stream[$]   // se va llenando con bytes válidos
   );
     logic [ALGN_OFFSET_WIDTH-1:0] o;
     logic [ALGN_SIZE_WIDTH-1:0] s;
-    if (!is_align_valid(in_s.offset, in_s.size)) return; // descarta inválidas
+    if (!is_align_valid(in_s.offset, in_s.size)) begin
+      $display("[CHK] La entrada es inválida, size: %0d, offset: %0d", in_s.size, in_s.offset)
+      return; // descarta inválidas
+    end
     o = in_s.offset;
     s = in_s.size;
     for (int i = 0; i < s; i++) begin
-      byte b = in_s.data_in[i]; // byte 0 en LSB
+      bit b = in_s.data_in[i]; // byte 0 en LSB
       byte_stream.push_back(b);
+      in_s.data_in.delete;
     end
   endfunction
+  */
+
   // ---- Construye el "golden" para UN paquete (primera salida emitible)
   function automatic bit build_expected_one(
-      const ref MD_pack2 #(W) pkt,
-      output MD_Tx_Sample exp_one
+      ref MD_pack2 #(W) pkt,
+      output MD_Tx_Sample exp_one,
   );
-    byte byte_stream[$];
-    MD_Rx_Sample rx_s;
-    int need;
-    int offset;
+    MD_Rx_Sample #(W) data_in_q[$];
+    bit [ALGN_DATA_WIDTH-1:0] byte_stream;
+    MD_Tx_Sample #(W) tx_s;
+    int unsigned tx_bytes_count;
+    int unsigned avail;
+    bit valid;
+    tx_bytes_count = 0;
+     
     
-
-    // 1) Aplanar entradas válidas del paquete a BYTES (orden de llegada)
-    foreach (pkt.data_in[i]) begin
-    rx_s = new();
-    rx_s.data   = pkt.data_in[i].data_in;
-    rx_s.offset = pkt.data_in[i].offset;
-    rx_s.size   = pkt.data_in[i].size;
-    append_valid_window_bytes(rx_s, byte_stream);
+    if (pkt.data_in[0].size < pkt.data_out[0].size) begin
+      tx_s = new();
+      byte_stream = '0;
+      foreach (pkt.data_in[i]) begin
+        rx_s = new();
+        data_in_q[i] = pkt.data_in[i].data_in;
+        rx_s.offset = pkt.data_in[i].offset;
+        rx_s.size   = pkt.data_in[i].size;
+        valid = is_align_valid(rx_s.offset, rx_s.size)
+        if (valid) begin
+          byte_stream = concat_one_from_pkt32(pkt, tx_s, avail);
+        end
+      end
+      tx_bytes_count = $unsigned(tx_s.ctrl_size)
+      emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
+    end
+    else begin
+      rx_s = new(); 
+      foreach (pkt.data_out[i]) begin
+      tx_s = new();
+      tx_s.data_out = pkt.data_out[i].data_out;
+      tx_s.ctrl_offset = pkt.data_out[i].ctrl_offset;
+      tx_s.ctrl_size = pkt.data_in[i].ctrl_size;
+      valid = is_align_valid(tx_s.offset, tx_s.size);
+      if (valid) begin
+        tx_bytes_count = $unsigned(tx_s.ctrl_size)
+        emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
+      end
+    end
+    
   end
-
-  // 2) Tamaño requerido = el que mostró el DUT (pkt.size_out)
-  need = pkt.data_out[0].ctrl_size;
 
   // DEBUG: imprimir flujo de bytes disponible
   $write("[CHK] byte_stream(size=%0d) = [", byte_stream.size());
@@ -76,31 +195,10 @@ class Checker #(int W = ALGN_DATA_WIDTH);
   $write("]\n");
 
   // 3) Armar UNA salida si hay bytes suficientes
-  return emit_one_word_from_bytes(byte_stream, need, exp_one);
+  return 1'b1
   endfunction
   
-  // ---------- Tomar N bytes (si hay) y construir un md_tx_s ----------
-  function automatic bit emit_one_word_from_bytes(
-      inout byte byte_stream[$],                    // entrada/salida
-      input int ctrl_size_bytes,
-      input int ctrl_offset_bytes,              // CFG_CTRL_SIZE (1..BYTES_W)
-      output MD_Tx_Sample out_one
-  );
-    out_one.data_out = '0;
-    out_one.offset = logic(ctrl_offset_bytes);
-    out_one.size = logic(ctrl_size_bytes);
-    if (ctrl_size_bytes <= 0 || ctrl_size_bytes > BYTES_W) return 1'b0;
-    if (byte_stream.size() < ctrl_size_bytes)               return 1'b0;
-
-    // Empaquetar los primeros ctrl_size_bytes en LSBs
-    for (int i = 0; i < ctrl_size_bytes; i++) begin
-      out_one.data_out[8*i +: 8] = byte_stream[i];
-    end
-    // Consumirlos del stream
-    for (int i = 0; i < ctrl_size_bytes; i++) void'(byte_stream.pop_front());
-
-    return 1'b1;
-  endfunction
+  
   // ---- Comparación 1:1 contra lo observado en el paquete
   function automatic bit compare_one(
       input MD_Tx_Sample exp,
@@ -123,13 +221,16 @@ class Checker #(int W = ALGN_DATA_WIDTH);
     MD_Tx_Sample #(W) exp;
     bit have;
     MD_Tx_Sample #(W) got_d;
+    MD_Tx_Sample #(W) out_q;
     logic [ALGN_SIZE_WIDTH-1:0] got_sz;
     logic [ALGN_OFFSET_WIDTH-1:0] got_off;
 
     forever begin
       mcMD_mailbox.get(pkt);
       $display("[CHK] pkt=%p", pkt);
+      out_q = pkt.data_out;
       got_d = new();
+
       $display("[CHK] Procesando paquete MD recibido en checker: %0d", pkt.data_in.size());
       n_checked++;
       have = build_expected_one(pkt, exp);
@@ -137,13 +238,12 @@ class Checker #(int W = ALGN_DATA_WIDTH);
       // Convención: si no hay suficientes bytes para formar una salida,
       // esperamos que el DUT NO haya emitido dato (o emita 0,0,0 según tu monitor).
       
-      got_d = pkt.data_out[0];
+      got_d = out_q[0];
       got_sz  = got_d.ctrl_size;
-      CTRL_SIZE = got_sz;
       got_off = got_d.ctrl_offset;
 
       if (!have) begin
-        md_tx_s null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
+        MD_Tx_Sample #(W) null_exp = '{data_out:'0, ctrl_offset:'0, ctrl_size:'0};
         if (compare_one(null_exp, got_d)) begin
           n_pass++;
           $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);

@@ -217,7 +217,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
     int unsigned bytes;
     forever begin
-      @ev_rx_pushed
+      @ev_rx_pushed;
       rx_sample = data_in_buffer.pop_front();
       @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
@@ -225,6 +225,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       if (rx_sample.size > tx_sample.ctrl_size) begin
         while(tx_bytes_count < rx_sample.size) begin
           @ev_tx_pushed;
+          tx_bytes_count =+ tx_sample.ctrl_size;
         end
         tr = new();
         tr.data_in[0] = rx_sample;
@@ -238,13 +239,13 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           end
 
         send_transaction(tr);
-        rx_bytes_count = 0;
         tx_bytes_count = 0;
       end
 
       else begin
         while (rx_bytes_count < tx_sample.ctrl_size) begin
           @ev_rx_pushed;
+          rx_bytes_count =+ rx_sample.size 
         end
         tr = new();
         tr.data_out[0] = tx_sample;
@@ -258,7 +259,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           end
         send_transaction(tr);
         rx_bytes_count = 0;
-        tx_bytes_count = 0;
       end
     end
   endtask
