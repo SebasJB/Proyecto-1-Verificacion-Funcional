@@ -69,7 +69,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
   mailbox mcMD_mailbox; // Monitor → checker: MD transactions
 
   // Mutex para proteger acceso a las colas
-  semaphore sem_buf = new(1);
+  semaphore sem_buf = new(2);
   event ev_rx_pushed, ev_tx_pushed;
 
   localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
@@ -122,7 +122,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       if (change_rx) begin
           // CAPTURA una sola muestra COMPLETA
-          
+          sem_buf.get();
           sample = new();
           sample.data_in = vif.md_rx_data;
           sample.offset  = vif.md_rx_offset;
@@ -130,6 +130,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
           data_in_buffer.push_back(sample);
+          sem_buf.put();
           -> ev_rx_pushed;
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
@@ -154,12 +155,15 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       vif.md_tx_size   !== last_size_tx   ||
       vif.md_tx_err    !== last_err_tx);
       if (change_tx) begin
+        sem_buf.get();
         sample = new();
         sample.data_out = vif.md_tx_data;
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
         data_out_buffer.push_back(sample);
+        @(posedge vif.clk);
+        sem_buf.put();
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
@@ -220,11 +224,15 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
+        
         while ((rx_bytes_count < bytes)||( rx_bytes_count != bytes)) begin
+          
           if (!rx_sample.err) begin
+            sem_buf.get()
             rx_bytes_count += $unsigned(rx_sample.size);
             tr.data_in[i] = rx_sample;
             i++;
+            sem_buf.put();
             @ev_rx_pushed;
             rx_sample = data_in_buffer.pop_front(); 
           end
@@ -234,6 +242,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
             rx_sample = data_in_buffer.pop_front(); 
           end
         end
+        s
         @(posedge vif.clk);
         $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), rx_bytes_count);
         foreach (tr.data_out[i]) begin
