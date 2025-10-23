@@ -28,7 +28,7 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
 
     // 1) CASO_GENERAL
     cmd = new();
-    cmd.mode = ESTRES ;  
+    cmd.mode = CASO_GENERAL;  
     cmd.randomize();       // aleatoriza len_n_md / len_n_apb según modo
     $display("[%0t] [TEST] Enviando CASO_GENERAL  len_md=%0d len_apb=%0d",
              $time, cmd.len_n_md, cmd.len_n_apb);
@@ -36,7 +36,7 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
 
     // 2) ESTRES
     cmd = new();
-    cmd.mode = CASO_GENERAL;
+    cmd.mode = ESTRES;
     cmd.randomize();
     $display("[%0t] [TEST] Enviando ESTRES        len_md=%0d len_apb=%0d",
              $time, cmd.len_n_md, cmd.len_n_apb);
