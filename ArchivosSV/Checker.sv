@@ -67,11 +67,11 @@ function bit concat_one_from_pkt32 (
 
     // Debug: mostrar lo que llegó
     //$display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
-           pkt.data_out[0].ctrl_size, pkt.data_out[0].ctrl_offset, pkt.data_out[0].data_out, pkt.data_in.size(), bytes_avail);
+          // pkt.data_out[0].ctrl_size, pkt.data_out[0].ctrl_offset, pkt.data_out[0].data_out, pkt.data_in.size(), bytes_avail);
     //$display("[CHK] byte_stream=0x%08h  (bytes: %02x %02x %02x %02x)",
-           byte_stream,
-           byte_stream[7:0], byte_stream[15:8],
-           byte_stream[23:16], byte_stream[31:24]);
+          // byte_stream,
+          // byte_stream[7:0], byte_stream[15:8],
+          // byte_stream[23:16], byte_stream[31:24]);
 
     // Validaciones mínimas
     if (need <= 0 || need > BYTES_W || ((BYTES_W + int'(off_out)) % int'(need)) != 0) begin
