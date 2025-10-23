@@ -207,9 +207,9 @@ endfunction
   
   
   // ---- Comparación 1:1 contra lo observado en el paquete
-  function automatic bit compare_one(
-      ref MD_Tx_Sample exp,
-      ref MD_Tx_Sample got_data
+  function bit compare_one(
+      input MD_Tx_Sample exp,
+      input MD_Tx_Sample got_data
   );
     bit ok = 1;
     if (exp.data_out != got_data.data_out) ok = 0;
