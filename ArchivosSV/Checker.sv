@@ -226,7 +226,7 @@ endfunction
   task run();
     MD_pack2 #(ALGN_DATA_WIDTH) pkt;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) exp;
-    MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp
+    MD_Tx_Sample #(ALGN_DATA_WIDTH) null_exp;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) got_d;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) out_q [$];
     bit have;
