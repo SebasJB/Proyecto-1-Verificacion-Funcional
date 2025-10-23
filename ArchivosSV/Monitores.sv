@@ -475,7 +475,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
       tr = new();
       // nota: algunos MD_pack2 tienen data_out[] (dinámico). Si el tuyo es un solo campo, ajusta:
-      tr.data_out = new();
+      //tr.data_out = new();
       tr.data_out[0] = tx;
 
       // Asegura disponibilidad de RX suficientes, trayendo del sampler a rx_fifo
@@ -506,7 +506,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         // Fragmenta si hace falta y anexa a la transacción
         frag = make_rx_fragment(head, rx_cursor, take);
         // Si tu MD_pack2 usa una cola dinámica:
-        if (tr.data_in.size() == 0) tr.data_in = new();
+        //if (tr.data_in.size() == 0) tr.data_in = new();
         tr.data_in.push_back(frag);
 
         // Actualiza cursores
