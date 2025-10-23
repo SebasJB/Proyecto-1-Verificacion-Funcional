@@ -196,7 +196,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
               tr.data_out[i] = tx_sample;
               tx_bytes_count += $unsigned(tx_sample.ctrl_size);
               i++;
-              if ((tx_bytes_count + $unsigned(tx_sample.ctrl_size)) == bytes) break;
+              //if ((tx_bytes_count + $unsigned(tx_sample.ctrl_size)) == bytes) break;
               @ev_tx_pushed;
               tx_sample = data_out_buffer.pop_front();
               
