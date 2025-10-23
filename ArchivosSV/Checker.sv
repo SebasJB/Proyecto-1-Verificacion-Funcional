@@ -73,11 +73,11 @@ function automatic bit concat_one_from_pkt32 (
     // Validaciones mínimas
     if (need <= 0 || need > BYTES_W || ((BYTES_W + int'(off_out)) % int'(need)) == 0) begin
       $error("[CHK] combinación inválida: need=%0d off=%0d (BYTES_W=%0d)", need, off_out, BYTES_W);
-      break;
+      return '0;
     end
     if (bytes_avail < need) begin
       $error("[CHK] insuficientes bytes en stream: need=%0d have=%0d", need, bytes_avail);
-      break;
+      return '0;
     end
 
     // ---------- 3) Construir palabra esperada colocando bytes en offset ----------
