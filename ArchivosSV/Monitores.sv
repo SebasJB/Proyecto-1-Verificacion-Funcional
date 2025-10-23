@@ -232,8 +232,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         rx_bytes_count = 0;
         bytes = $unsigned(tx_sample.ctrl_size);
         while ((i < bytes)||(rx_bytes_count < BYTES_W)) begin
-          @ev_rx_pushed;
-          rx_sample = data_in_buffer.pop_front();
           if (rx_sample.err) begin
             tr.data_err[i] = rx_sample;
           end
@@ -241,7 +239,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
             rx_bytes_count += $unsigned(rx_sample.size);
             tr.data_in[i] = rx_sample;
             i++;
-          end   
+          end
+          @ev_rx_pushed;
+          rx_sample = data_in_buffer.pop_front();   
         end
         @(posedge vif.clk);
          $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), rx_bytes_count);
