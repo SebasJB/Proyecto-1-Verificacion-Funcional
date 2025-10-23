@@ -183,7 +183,7 @@ endfunction
     end
     else begin
       rx_s = new();
-      rx_s.data_in = pkt.data_in[0].data_in; 
+      byte_stream = pkt.data_in[0].data_in; 
       foreach (pkt.data_out[i]) begin
       tx_s = new();
       tx_s.data_out = pkt.data_out[i].data_out;
