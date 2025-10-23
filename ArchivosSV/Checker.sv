@@ -30,7 +30,7 @@ class Checker #(int ALGN_DATA_WIDTH = 32);
 // para formar UNA salida esperada desde MD_pack2.
 // Devuelve 1 si pudo formarla (hubo >= need bytes), 0 si no.
 // ==========================================================
-function automatic bit concat_one_from_pkt32 #(ALGN_DATA_WIDTH)(
+function automatic bit concat_one_from_pkt32 (
   input data_in_q[$],
   ref MD_Tx_Sample #(ALGN_DATA_WIDTH) exp_one,    // salida esperada (clase)
   output int unsigned bytes_avail // bytes metidos en byte_stream
