@@ -37,7 +37,8 @@ function automatic bit concat_one_from_pkt32 (
 );
 
     localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
-    bit [ALGN_DATA_WIDTH-1:0] byte_stream = '0; 
+    bit [ALGN_DATA_WIDTH-1:0] byte_stream = '0;
+    bit [ALGN_DATA_WIDTH-1:0] expected = '0;
     int unsigned need;
     int unsigned off_out;
 
@@ -81,7 +82,6 @@ function automatic bit concat_one_from_pkt32 (
     end
 
     // ---------- 3) Construir palabra esperada colocando bytes en offset ----------
-    bit [ALGN_DATA_WIDTH-1:0] expected = '0;
     for (int j = 0; j < need; j++) begin
       expected[8*(off_out + j) +: 8] = byte_stream[8*j +: 8];
     end
