@@ -228,7 +228,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         while ((rx_bytes_count < bytes)||( rx_bytes_count != bytes)) begin
           
           if (!rx_sample.err) begin
-            sem_buf.get()
+            sem_buf.get();
             rx_bytes_count += $unsigned(rx_sample.size);
             tr.data_in[i] = rx_sample;
             i++;
