@@ -66,7 +66,7 @@ function automatic bit concat_one_from_pkt32 (
 
     // Debug: mostrar lo que llegó
     $display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
-           pkt.size_out, pkt.offset_out, pkt.data_out.data_out, pkt.data_in.size(), bytes_avail);
+           pkt.size_out, pkt.offset_out, pkt.data_out[0].data_out, pkt.data_in.size(), bytes_avail);
     $display("[CHK] byte_stream=0x%08h  (bytes: %02x %02x %02x %02x)",
            byte_stream,
            byte_stream[7:0], byte_stream[15:8],
@@ -179,16 +179,17 @@ endfunction
       emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
     end
     else begin
-      rx_s = new(); 
+      rx_s = new();
+      rx_s.data_in = pkt.data_in[0].data_in; 
       foreach (pkt.data_out[i]) begin
       tx_s = new();
       tx_s.data_out = pkt.data_out[i].data_out;
       tx_s.ctrl_offset = pkt.data_out[i].ctrl_offset;
-      tx_s.ctrl_size = pkt.data_in[i].ctrl_size;
-      valid = is_align_valid(tx_s.offset, tx_s.size);
+      tx_s.ctrl_size = pkt.data_out[i].ctrl_size;
+      valid = is_align_valid(tx_s.ctrl_offset, tx_s.size);
       if (valid) begin
         tx_bytes_count = $unsigned(tx_s.ctrl_size);
-        emit_one_word_from_bytes(byte_stream, tx_bytes_count, exp_one);
+        emit_one_word_from_bytes(rx_s, tx_bytes_count, exp_one);
       end
     end
     
