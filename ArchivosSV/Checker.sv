@@ -149,7 +149,7 @@ endfunction
   // ---- Construye el "golden" para UN paquete (primera salida emitible)
   function automatic bit build_expected_one(
       ref MD_pack2 #(ALGN_DATA_WIDTH) pkt,
-      output MD_Tx_Sample exp_one,
+      output MD_Tx_Sample exp_one
   );
     MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_q[$];
     bit [ALGN_DATA_WIDTH-1:0] byte_stream;
