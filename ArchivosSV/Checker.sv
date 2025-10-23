@@ -103,7 +103,7 @@ endfunction
   function automatic void emit_one_word_from_bytes(
       input bit [ALGN_DATA_WIDTH-1:0] byte_stream[$],  
       input int unsigned ctrl_size_bytes,                  // entrada/salida
-      output MD_Tx_Sample #(ALGN_DATA_WIDTH) out_one
+      output MD_Tx_Sample out_one
   );
 
     if (ctrl_size_bytes <= 0 || ctrl_size_bytes > BYTES_W) return;
