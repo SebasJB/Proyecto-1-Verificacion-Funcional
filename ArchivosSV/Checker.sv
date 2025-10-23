@@ -35,13 +35,14 @@ function bit concat_one_from_pkt32 (
   MD_Rx_Sample data_in_q[$],
   output MD_Tx_Sample exp_one,    // salida esperada (clase)
   output int unsigned bytes_avail // bytes metidos en byte_stream
+  output bit [ALGN_DATA_WIDTH-1:0] byte_stream;
 );
 
     localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
-    bit [ALGN_DATA_WIDTH-1:0] byte_stream = '0;
     bit [ALGN_DATA_WIDTH-1:0] expected = '0;
     int unsigned need;
     int unsigned off_out;
+    byte_stream = '0;
 
 
     // ---------- 1) Aplanar entradas a byte_stream (LSB-first) ----------
@@ -95,7 +96,7 @@ function bit concat_one_from_pkt32 (
   
 
     $display("[CHK] EXPECTED: data=%h size=%0d off=%0d", exp_one.data_out, exp_one.ctrl_size, exp_one.ctrl_offset);
-    return byte_stream;
+    return 1'b1;
 endfunction
 
 
@@ -173,7 +174,7 @@ endfunction
         rx_s.size   = pkt.data_in[i].size;
         valid = is_align_valid(rx_s.offset, rx_s.size);
         if (valid) begin
-          byte_stream = concat_one_from_pkt32(pkt, data_in_q, tx_s, avail);
+          concat_one_from_pkt32(pkt, data_in_q, tx_s, avail, byte_stream);
         end
       end
       tx_bytes_count = $unsigned(tx_s.ctrl_size);
