@@ -58,7 +58,7 @@ endclass
 // - Reporta handshakes (MD_EVT_HANDSHAKE) cuando (md_tx_valid && md_tx_ready).
 // - Publica a msMD_mailbox (scoreboard) y mcMD_mailbox (checker).
 // ----------------------------------------------------
-/*
+
 class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Interfaz virtual (tu MD_if)
@@ -251,9 +251,9 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       aligner();
     join_none
   endtask 
-endclass */
+endclass 
 
-// ----------------------------------------------------
+/* // ----------------------------------------------------
 // MD Monitor (para MD_if)
 // - Captura en RX y TX cada vez que cambia VALID o el contenido (data/offset/size/err).
 // - Para el CHECKER/Scoreboard arma transacciones donde cada TX consume exactamente
@@ -532,5 +532,5 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     end // forever
   endtask
 
-endclass
+endclass */
 
