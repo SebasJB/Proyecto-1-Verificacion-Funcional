@@ -31,6 +31,7 @@ class Checker #(int ALGN_DATA_WIDTH = 32);
 // Devuelve 1 si pudo formarla (hubo >= need bytes), 0 si no.
 // ==========================================================
 function automatic bit concat_one_from_pkt32 (
+  MD_pack2 # (ALGN_DATA_WIDTH) pkt,
   MD_Rx_Sample data_in_q[$],
   ref MD_Tx_Sample #(ALGN_DATA_WIDTH) exp_one,    // salida esperada (clase)
   output int unsigned bytes_avail // bytes metidos en byte_stream
@@ -53,7 +54,7 @@ function automatic bit concat_one_from_pkt32 (
 
       // Recorta si ya llenamos 4 bytes
       for (int b = 0; (b < s) && (bytes_avail < BYTES_W); b++ ) begin
-        byte_stream[8*bytes_avail +: 8] = pkt.data_in[i].data_in[8*(o+b) +: 8];
+        byte_stream[8*bytes_avail +: 8] = data_in_q[i].data_in[8*(o+b) +: 8];
         bytes_avail++;
       end
       if (bytes_avail == BYTES_W) break; // stream de 32b lleno
@@ -154,6 +155,7 @@ endfunction
     MD_Rx_Sample #(ALGN_DATA_WIDTH) data_in_q[$];
     bit [ALGN_DATA_WIDTH-1:0] byte_stream;
     MD_Tx_Sample #(ALGN_DATA_WIDTH) tx_s;
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) rx_s;
     int unsigned tx_bytes_count;
     int unsigned avail;
     bit valid;
@@ -170,7 +172,7 @@ endfunction
         rx_s.size   = pkt.data_in[i].size;
         valid = is_align_valid(rx_s.offset, rx_s.size);
         if (valid) begin
-          byte_stream = concat_one_from_pkt32(pkt, tx_s, avail);
+          byte_stream = concat_one_from_pkt32(pkt, data_in_q, tx_s, avail);
         end
       end
       tx_bytes_count = $unsigned(tx_s.ctrl_size);
