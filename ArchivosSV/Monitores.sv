@@ -133,9 +133,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sem_buf.get();
           data_in_buffer.push_back(sample);
           rx_bytes_count += sample.size;
-
-          @(posedge vif.clk);
           sem_buf.put();
+          @(posedge vif.clk);
           -> ev_rx_pushed;
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
@@ -160,8 +159,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       vif.md_tx_size   !== last_size_tx   ||
       vif.md_tx_err    !== last_err_tx);
       if (change_tx) begin
-        
-        
         sample = new();
         sample.data_out = vif.md_tx_data;
         sample.ctrl_offset = vif.md_tx_offset;
@@ -171,9 +168,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         sem_buf.get();
         data_out_buffer.push_back(sample);
         tx_bytes_count += sample.ctrl_size;
-
-        @(posedge vif.clk)
         sem_buf.put();
+        @(posedge vif.clk)
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
@@ -204,7 +200,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
-        while((tx_bytes_count < bytes)) begin
+        while((i < bytes)) begin
           @ev_tx_pushed;
           tx_sample = data_out_buffer.pop_front();
           tx_bytes_count += $unsigned(tx_sample.ctrl_size);
