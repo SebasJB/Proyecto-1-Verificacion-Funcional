@@ -190,19 +190,18 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       tr = new();
       if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
       rx_sample = data_in_buffer.pop_front();
-      if (rx_sample.err) begin
-            tr.data_err[0] = rx_sample;
-          end
-          else begin
-            rx_bytes_count += $unsigned(rx_sample.size);
-            tr.data_in[0] = rx_sample;
-            i++;
-          end 
+      
       tx_sample = data_out_buffer.pop_front();
       
 
 
       if (rx_sample.size > tx_sample.ctrl_size) begin
+        if (rx_sample.err) begin
+            tr.data_err[0] = rx_sample;
+          end
+        else begin
+            tr.data_in[0] = rx_sample;
+          end 
         i = 0;
         tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
