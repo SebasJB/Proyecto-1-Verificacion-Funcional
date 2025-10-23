@@ -528,7 +528,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       send_transaction(tr);
 
       // 5) Mensajería de debug (opcional)
-      /$display("[MD_MON] TX(size=%0d, off=%0d) -> %0d fragmentos RX",tx.ctrl_size, tx.ctrl_offset, tr.data_in.size());
+      $display("[MD_MON] TX(size=%0d, off=%0d) -> %0d fragmentos RX",tx.ctrl_size, tx.ctrl_offset, tr.data_in.size());
     end // forever
   endtask
 
