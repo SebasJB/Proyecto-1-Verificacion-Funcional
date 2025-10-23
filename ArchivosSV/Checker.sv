@@ -38,6 +38,8 @@ function automatic bit concat_one_from_pkt32 (
 
     localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
     bit [ALGN_DATA_WIDTH-1:0] byte_stream = '0; 
+    int unsigned need;
+    int unsigned off_out;
 
 
     // ---------- 1) Aplanar entradas a byte_stream (LSB-first) ----------
@@ -57,8 +59,8 @@ function automatic bit concat_one_from_pkt32 (
     end
 
     // ---------- 2) Necesidad de salida según el DUT ----------
-    int need = pkt.data_out[0].ctrl_size;    // en bytes
-    int off_out  = pkt.data_out[0].ctrl_offset;  // en bytes
+    need = $unsigned(pkt.data_out[0].ctrl_size);    // en bytes
+    off_out  = $unsigned(pkt.data_out[0].ctrl_offset);  // en bytes
 
     // Debug: mostrar lo que llegó
     $display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
