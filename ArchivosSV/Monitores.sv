@@ -344,15 +344,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     mcMD_mailbox.put(tr);
   endfunction
 
-  // ====== Constructor ======
-  function new(virtual MD_if #(ALGN_DATA_WIDTH) vif,
-               mailbox msMD_mailbox,
-               mailbox mcMD_mailbox);
-    this.vif = vif;
-    this.msMD_mailbox = msMD_mailbox;
-    this.mcMD_mailbox = mcMD_mailbox;
-  endfunction
-
   // ====== API de arranque ======
   task run();
     fork
@@ -441,7 +432,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           s.data_out    = vif.md_tx_data;
           s.ctrl_offset = vif.md_tx_offset;
           s.ctrl_size   = vif.md_tx_size;
-          s.err         = vif.md_tx_err;
           s.t_sample    = $time;
 
           sem_buf.get();
@@ -455,7 +445,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         last_data_tx   = vif.md_tx_data;
         last_offset_tx = vif.md_tx_offset;
         last_size_tx   = vif.md_tx_size;
-        last_err_tx    = vif.md_tx_err;
         last_valid_tx  = vif.md_tx_valid;
       end
     end
