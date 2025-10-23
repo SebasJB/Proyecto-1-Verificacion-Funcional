@@ -132,7 +132,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           
           sem_buf.get();
           data_in_buffer.push_back(sample);
-          rx_bytes_count += sample.size;
           
           @(posedge vif.clk);
           sem_buf.put();
@@ -168,7 +167,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
         sem_buf.get();
         data_out_buffer.push_back(sample);
-        tx_bytes_count += sample.ctrl_size;
         
         @(posedge vif.clk)
         sem_buf.put();
