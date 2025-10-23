@@ -318,8 +318,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     make_rx_fragment(MD_Rx_Sample #(ALGN_DATA_WIDTH) src,
                      int unsigned start_byte,
                      int unsigned count);
-    MD_Rx_Sample #(ALGN_DATA_WIDTH) frag = new();
-    bit [ALGN_DATA_WIDTH-1:0] packed = '0;
+    MD_Rx_Sample #(ALGN_DATA_WIDTH) frag;
+    bit [ALGN_DATA_WIDTH-1:0] packed;
+    packed = '0;
+    frag = new();
 
     for (int j = 0; j < count; j++) begin
       int lane = src.offset + start_byte + j;
