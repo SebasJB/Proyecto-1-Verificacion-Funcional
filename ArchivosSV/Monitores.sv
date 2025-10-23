@@ -159,6 +159,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
+        $display("[MON] Dato capturado: %0d", sample.data_out)
         data_out_buffer.push_back(sample);
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
