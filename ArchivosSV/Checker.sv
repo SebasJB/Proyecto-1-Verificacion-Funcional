@@ -34,8 +34,8 @@ function bit concat_one_from_pkt32 (
   MD_pack2 # (ALGN_DATA_WIDTH) pkt,
   MD_Rx_Sample data_in_q[$],
   output MD_Tx_Sample exp_one,    // salida esperada (clase)
-  output int unsigned bytes_avail // bytes metidos en byte_stream
-  output bit [ALGN_DATA_WIDTH-1:0] byte_stream;
+  output int unsigned bytes_avail, // bytes metidos en byte_stream
+  output bit [ALGN_DATA_WIDTH-1:0] byte_stream
 );
 
     localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
