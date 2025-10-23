@@ -182,11 +182,14 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     int unsigned i;
     forever begin
       tr = new();
+      $display("[MON] Datos en el buffer de entrada: %0d", data_in_buffer.size())
+      $display("[MON] Datos en el buffer de salida: %0d", data_out_buffer.size())
       if (data_in_buffer.size() == 0 ) @ev_rx_pushed;
       rx_sample = data_in_buffer.pop_front();
       if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-
+      $display("[MON] Datos en el buffer de entrada: %0d", data_in_buffer.size())
+      $display("[MON] Datos en el buffer de salida: %0d", data_out_buffer.size())
       if (rx_sample.size > tx_sample.ctrl_size) begin
         tx_bytes_count = 0;
         if (rx_sample.err) begin
