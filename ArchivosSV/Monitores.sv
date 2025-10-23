@@ -70,7 +70,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
 
   // Mutex para proteger acceso a las colas
   semaphore sem_buf = new(1);
-  event ev_rx_pushed, ev_tx_pushed;
+  event ev_rx_pushed, ev_tx_pushed, aligned_tx,
 
   localparam int BYTES_W = (ALGN_DATA_WIDTH/8);
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
@@ -129,12 +129,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           sample.size    = vif.md_rx_size;
           sample.err     = vif.md_rx_err;
           sample.t_sample= $time;
-          
-          sem_buf.get();
           data_in_buffer.push_back(sample);
-          
-          @(posedge vif.clk);
-          sem_buf.put();
           -> ev_rx_pushed;
           // actualiza "last" después de capturar
           last_data_rx   = vif.md_rx_data;
@@ -164,12 +159,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         sample.ctrl_offset = vif.md_tx_offset;
         sample.ctrl_size = vif.md_tx_size;
         sample.t_sample = $time;
-
-        sem_buf.get();
         data_out_buffer.push_back(sample);
-        
-        @(posedge vif.clk)
-        sem_buf.put();
         -> ev_tx_pushed;
         // actualiza "last" después de capturar
         last_data_tx   = vif.md_tx_data;
@@ -188,12 +178,10 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     int unsigned i;
     forever begin
       tr = new();
-      if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
+      if (data_in_buffer.size() == 0 ) @ev_rx_pushed;
       rx_sample = data_in_buffer.pop_front();
-      
+      if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-      
-
 
       if (rx_sample.size > tx_sample.ctrl_size) begin
         if (rx_sample.err) begin
@@ -205,8 +193,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         i = 0;
         tx_bytes_count = 0;
         bytes = $unsigned(rx_sample.size);
-        while(( i < bytes)|| ( tx_bytes_count < BYTES_W)) begin
-          tx_bytes_count += $unsigned(tx_sample.ctrl_size);
+        while(( i < bytes))) begin
           tr.data_out[i] = tx_sample;
           i++;
           @ev_tx_pushed;
