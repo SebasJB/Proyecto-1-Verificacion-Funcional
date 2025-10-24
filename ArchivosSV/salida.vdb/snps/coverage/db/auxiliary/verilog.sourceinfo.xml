@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE cov SYSTEM "ucdb_srcinfo.dtd">
+  <srcinfo name="/mnt/vol_NFS_rh003/Est_Veri_II_2025/BarrantesPerez_Veri_II_25/Proyecto-1-Verificacion-Funcional/ArchivosSV"  >
+    <ucapi_version  major_ver="13"  minor_ver="1"  patch_str="R-2020.12-SP2"  />
+      <fileinfo name="testbench.sv"  id="0"  timestamp="1761281832"  />
+      <fileinfo name="design.v"  id="1"  timestamp="1761281832"  />
+      <fileinfo name="cfs_synch.v"  id="2"  timestamp="1761281832"  />
+      <fileinfo name="cfs_synch_fifo.v"  id="3"  timestamp="1761281832"  />
+      <fileinfo name="cfs_rx_ctrl.v"  id="4"  timestamp="1761281832"  />
+      <fileinfo name="cfs_ctrl.v"  id="5"  timestamp="1761281832"  />
+      <fileinfo name="cfs_tx_ctrl.v"  id="6"  timestamp="1761281832"  />
+      <fileinfo name="cfs_edge_detect.v"  id="7"  timestamp="1761281832"  />
+      <fileinfo name="cfs_regs.v"  id="8"  timestamp="1761281832"  />
+      <fileinfo name="cfs_aligner_core.v"  id="9"  timestamp="1761281832"  />
+      <fileinfo name="cfs_aligner.v"  id="10"  timestamp="1761281832"  />
+      <fileinfo name="trans_items.sv"  id="11"  timestamp="1761282570"  />
+      <fileinfo name="generador.sv"  id="12"  timestamp="1761281832"  />
+      <fileinfo name="drivers.sv"  id="13"  timestamp="1761281832"  />
+      <fileinfo name="Monitores.sv"  id="14"  timestamp="1761281832"  />
+      <fileinfo name="Scoreboard.sv"  id="15"  timestamp="1761283166"  />
+      <fileinfo name="Checker.sv"  id="16"  timestamp="1761283394"  />
+      <fileinfo name="environment.sv"  id="17"  timestamp="1761281832"  />
+      <fileinfo name="test.sv"  id="18"  timestamp="1761283272"  />
+    </srcinfo>
