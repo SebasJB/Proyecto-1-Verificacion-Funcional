@@ -194,7 +194,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       if (rx_sample.size > tx_sample.ctrl_size) begin
         tx_bytes_count = 0;
         if (rx_sample.err) begin
-            tr.data_err[0] = rx_sample;
             if (data_in_buffer.size() != 0) rx_sample = data_in_buffer.pop_front();
             send_transaction(tr);
           end
@@ -239,7 +238,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
             rx_sample = data_in_buffer.pop_front(); 
           end
           else begin
-            tr.data_err[i] = rx_sample;
             if (data_in_buffer.size() != 0) rx_sample = data_in_buffer.pop_front(); 
             else begin 
               @ev_rx_pushed;
@@ -268,7 +266,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h), RX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out ,tr.data_in[0].size, tr.data_in[0].data_in, tr.data_in.size(), rx_bytes_count);  
         end
         else begin
-          tr.data_err[0] = rx_sample;
+          continue
         end
       end
     end
