@@ -193,7 +193,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     $display("[%0t] [SB] CSV escrito en '%s' (filas=%0d)", $time, path, n_rows);
 
     // ===== CSV =====
-  
+  endtask
 
   function void csv_open(string path = "md_trace.csv");
   int csv_fd;
