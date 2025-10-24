@@ -350,9 +350,36 @@ class MD_pack2 #(int ALGN_DATA_WIDTH = 32);
   
 
   function MD_pack2 #(ALGN_DATA_WIDTH) clone();
-    MD_pack2#(ALGN_DATA_WIDTH) c = new();
-    c.data_in = this.data_in;
-    c.data_out = this.data_out;
-    return c;
-  endfunction
+  MD_pack2#(ALGN_DATA_WIDTH) c = new();
+  // RX
+  foreach (this.data_in[i]) begin
+    MD_Rx_Sample#(ALGN_DATA_WIDTH) s = new();
+    s.data_in  = this.data_in[i].data_in;
+    s.offset   = this.data_in[i].offset;
+    s.size     = this.data_in[i].size;
+    s.err      = this.data_in[i].err;
+    s.t_sample = this.data_in[i].t_sample;
+    c.data_in.push_back(s);
+  end
+  // TX
+  foreach (this.data_out[j]) begin
+    MD_Tx_Sample#(ALGN_DATA_WIDTH) t = new();
+    t.data_out    = this.data_out[j].data_out;
+    t.ctrl_offset = this.data_out[j].ctrl_offset;
+    t.ctrl_size   = this.data_out[j].ctrl_size;
+    t.t_sample    = this.data_out[j].t_sample;
+    c.data_out.push_back(t);
+  end
+  // ERR
+  foreach (this.data_err[k]) begin
+    MD_Rx_Sample#(ALGN_DATA_WIDTH) e = new();
+    e.data_in  = this.data_err[k].data_in;
+    e.offset   = this.data_err[k].offset;
+    e.size     = this.data_err[k].size;
+    e.err      = this.data_err[k].err;
+    e.t_sample = this.data_err[k].t_sample;
+    c.data_err.push_back(e);
+  end
+  return c;
+endfunction
 endclass

@@ -119,7 +119,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   // === Exportar CSV en columnas ===
   // Columnas: RX_data, RX_size, RX_offset, APB_prdata, APB_pslverr, TX_data, TX_size, TX_offset
   // + (opcional) APB_addr, APB_dir, APB_wdata, APB_waitstates
- /* task write_csv(string path);
+  task write_csv(string path);
     int fd = $fopen(path, "w");
     if (fd == 0) begin
       $display("[%0t] [SB] ERROR: No se pudo abrir CSV '%s'", $time, path);
@@ -186,6 +186,87 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
     $fclose(fd);
     $display("[%0t] [SB] CSV escrito en '%s' (filas=%0d)", $time, path, n_rows);
-  endtask*/
+    class Scoreboard #(int W = 32);
+
+  // ... (tu plumbing existente)
+
+  // ===== CSV =====
+  int csv_fd;
+  bit csv_header_written = 0;
+
+  function void csv_open(string path = "md_trace.csv");
+    csv_fd = $fopen(path, "w");
+    if (csv_fd == 0) $fatal(1, "[SCB] No pude abrir CSV '%s'", path);
+    // Header
+    $fdisplay(csv_fd,
+      "pkt_id,stream,idx,data_hex,offset,size,err,t_sample_ps");
+    csv_header_written = 1;
+    $display("[SCB] CSV abierto en '%s'", path);
+  endfunction
+
+  function void csv_close();
+    if (csv_fd) begin
+      $fclose(csv_fd);
+      csv_fd = 0;
+      $display("[SCB] CSV cerrado");
+    end
+  endfunction
+
+  // Helpers para escribir filas (formato uniforme)
+  function void csv_write_rx(int pkt_id, int idx, MD_Rx_Sample#(W) s);
+    $fdisplay(csv_fd, "%0d,RX,%0d,%0h,%0d,%0d,%0d,%0t",
+              pkt_id, idx, s.data_in,
+              int'($unsigned(s.offset)),
+              int'($unsigned(s.size)),
+              int'(s.err), s.t_sample);
+  endfunction
+
+  function void csv_write_tx(int pkt_id, int idx, MD_Tx_Sample#(W) s);
+    // err no existe en TX sample -> escribe 0
+    $fdisplay(csv_fd, "%0d,TX,%0d,%0h,%0d,%0d,%0d,%0t",
+              pkt_id, idx, s.data_out,
+              int'($unsigned(s.ctrl_offset)),
+              int'($unsigned(s.ctrl_size)),
+              0, s.t_sample);
+  endfunction
+
+  function void csv_write_err(int pkt_id, int idx, MD_Rx_Sample#(W) s);
+    $fdisplay(csv_fd, "%0d,ERR,%0d,%0h,%0d,%0d,%0d,%0t",
+              pkt_id, idx, s.data_in,
+              int'($unsigned(s.offset)),
+              int'($unsigned(s.size)),
+              int'(s.err), s.t_sample);
+  endfunction
+
+  // Escribe todo un paquete MD (tres colas)
+  function void csv_write_packet(int pkt_id, MD_pack2#(W) p);
+    if (!csv_header_written) csv_open(); // auto-open si olvidaste llamarlo
+    // RX
+    foreach (p.data_in[i])
+      if (p.data_in[i] != null) csv_write_rx(pkt_id, i, p.data_in[i]);
+    // TX
+    foreach (p.data_out[j])
+      if (p.data_out[j] != null) csv_write_tx(pkt_id, j, p.data_out[j]);
+    // ERR
+    foreach (p.data_err[k])
+      if (p.data_err[k] != null) csv_write_err(pkt_id, k, p.data_err[k]);
+  endfunction
+
+  // ===== Ejemplo de uso en tu flujo =====
+  int unsigned pkt_counter = 0;
+
+  task run();
+    MD_pack2#(W) pkt;
+    csv_open("md_trace.csv"); // abrir una vez (o deja que sea auto)
+    forever begin
+      mcMD_mailbox.get(pkt);     // donde sea que recibas el paquete
+      csv_write_packet(pkt_counter++, pkt);
+      // ... resto del procesamiento/scoreboard ...
+    end
+  endtask
+
+endclass
+
+  endtask
 
 endclass
