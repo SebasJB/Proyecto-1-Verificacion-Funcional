@@ -5,7 +5,7 @@
 // ----------------------------------------------------
 class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
-  localparam in W = ALGN_DATA_WIDTH;
+  localparam int W = ALGN_DATA_WIDTH;
   localparam int ALGN_OFFSET_WIDTH = (ALGN_DATA_WIDTH<=8) ? 1 : $clog2(ALGN_DATA_WIDTH/8);
   localparam int ALGN_SIZE_WIDTH   = 3;
   // Mailboxes (exactos según tu requerimiento)
