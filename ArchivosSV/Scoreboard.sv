@@ -115,7 +115,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
       consume_md_generator();
       consume_apb_generator();
     join_none
-  endtask*/
+  endtask
 
   // === Exportar CSV en columnas ===
   // Columnas: RX_data, RX_size, RX_offset, APB_prdata, APB_pslverr, TX_data, TX_size, TX_offset
