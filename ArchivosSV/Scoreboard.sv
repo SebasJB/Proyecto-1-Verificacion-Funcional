@@ -276,6 +276,4 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
 endclass
 
-  endtask
-
 endclass
