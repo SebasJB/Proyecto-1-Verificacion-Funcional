@@ -266,7 +266,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h), RX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out ,tr.data_in[0].size, tr.data_in[0].data_in, tr.data_in.size(), rx_bytes_count);  
         end
         else begin
-          continue
+          continue;
         end
       end
     end
