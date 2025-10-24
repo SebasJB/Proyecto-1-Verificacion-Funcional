@@ -165,7 +165,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
         s_apb_prd  = $sformatf("0x%0h", apb_prdata_q[i]);
         s_apb_err  = $sformatf("%0d",   apb_pslverr_q[i]);
         s_apb_addr = $sformatf("0x%0h", apb_addr_q[i]);
-        s_apb_dir  = (apb_dir_q[i]==APBWRITE) ? "W" : "R";
+        s_apb_dir  = (apb_dir_q[i]==APB_WRITE) ? "W" : "R";
         s_apb_wdat = $sformatf("0x%0h", apb_wdata_q[i]);
         s_apb_ws   = $sformatf("%0d",   apb_waitstates_q[i]);
       end else begin
