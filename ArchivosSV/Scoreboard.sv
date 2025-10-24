@@ -193,10 +193,11 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     $display("[%0t] [SB] CSV escrito en '%s' (filas=%0d)", $time, path, n_rows);
 
     // ===== CSV =====
-  int csv_fd;
-  bit csv_header_written = 0;
+  
 
   function void csv_open(string path = "md_trace.csv");
+  int csv_fd;
+  bit csv_header_written = 0;
     csv_fd = $fopen(path, "w");
     if (csv_fd == 0) $fatal(1, "[SCB] No pude abrir CSV '%s'", path);
     // Header
@@ -254,10 +255,11 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
       if (p.data_err[k] != null) csv_write_err(pkt_id, k, p.data_err[k]);
   endfunction
 
-  // ===== Ejemplo de uso en tu flujo =====
-  int unsigned pkt_counter = 0;
+  
 
   task run();
+  // ===== Ejemplo de uso en tu flujo =====
+  int unsigned pkt_counter = 0;
     MD_pack2#(W) pkt;
     csv_open("md_trace.csv"); // abrir una vez (o deja que sea auto)
     forever begin
