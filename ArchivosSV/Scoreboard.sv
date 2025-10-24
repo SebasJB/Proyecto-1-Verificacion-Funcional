@@ -127,7 +127,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     end
 
     // Cabecera
-    $fdisplay(fd, "idx," "rx_data,rx_size,rx_offset," "apb_prdata,apb_pslverr,apb_addr,apb_dir,apb_wdata,apb_waitstates," "tx_data,tx_size,tx_offset");
+    $fdisplay(fd, "idx,","rx_data,rx_size,rx_offset,", "apb_prdata,apb_pslverr,apb_addr,apb_dir,apb_wdata,apb_waitstates," ,"tx_data,tx_size,tx_offset");
 
     int unsigned n_rx = rx_data_q.size();
     int unsigned n_apb = apb_prdata_q.size();
