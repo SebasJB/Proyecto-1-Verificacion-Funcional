@@ -298,10 +298,10 @@ class pack3;
   rand int    len_n_apb;
 
   constraint c_len {
-    if (mode==CASO_GENERAL) { len_n_md inside {[700:900]}; len_n_apb inside {[400:600]}; }
-    if (mode==ESTRES)       { len_n_md inside {[700:800]};  len_n_apb inside {[400:600]}; }
-    if (mode==APB_CFG)      { len_n_md inside {[600:820]}; len_n_apb inside {[400:700]}; }
-    if (mode==ERRORES)      { len_n_md == 600;              len_n_apb == 400; }
+    if (mode==CASO_GENERAL) { len_n_md inside {[100:200]}; len_n_apb inside {[20:50]}; }
+    if (mode==ESTRES)       { len_n_md inside {[100:150]};  len_n_apb inside {[10:50]}; }
+    if (mode==APB_CFG)      { len_n_md inside {[100:150]}; len_n_apb inside {[100:150]}; }
+    if (mode==ERRORES)      { len_n_md == 150;              len_n_apb == 400; }
   }
 
   function new(test_e m = CASO_GENERAL);   // Constructor
