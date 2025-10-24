@@ -123,6 +123,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     int unsigned n_rx;
     int unsigned n_apb;
     int unsigned n_tx;
+    int unsigned n_rows;
 
     int fd = $fopen(path, "w");
     if (fd == 0) begin
@@ -137,7 +138,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     n_apb = apb_prdata_q.size();
     n_tx = tx_data_q.size();
 
-    int unsigned n_rows;
+    
     if (n_rx >= n_apb && n_rx >= n_tx)       n_rows = n_rx;
     else if (n_apb >= n_rx && n_apb >= n_tx) n_rows = n_apb;
     else                                     n_rows = n_tx;
