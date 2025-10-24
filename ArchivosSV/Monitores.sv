@@ -184,7 +184,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       
       if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
-      rx_sample = data_in_buffer.pop_front();
+      if rx_sample = data_in_buffer.pop_front();
       foreach (data_in_buffer[i]) begin
               $display("  [RX%0d] data=%h off=%0d size=%0d", i, data_in_buffer[i].data_in, data_in_buffer[i].offset, data_in_buffer[i].size);
             end
@@ -207,7 +207,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
               if (tx_bytes_count != bytes) tx_sample = data_out_buffer.pop_front();
             end
             @(posedge vif.clk);
-            $display("[MD_MON] Enviado paquete MD al checker: RX(size=%0d,data=%h) TX(samples=%0d) Bytes count: %0d", tr.data_in[0].size, tr.data_in[0].data_in, tr.data_out.size(), tx_bytes_count);
+            $display("[%0t] Enviado paquete MD al checker: RX(size=%0d,data=%h) TX(samples=%0d) Bytes count: %0d", $time, tr.data_in[0].size, tr.data_in[0].data_in, tr.data_out.size(), tx_bytes_count);
             foreach (tr.data_in[i]) begin
               $display("  [RX%0d] data=%h off=%0d size=%0d", i, tr.data_in[i].data_in, tr.data_in[i].offset, tr.data_in[i].size);
             end
@@ -245,7 +245,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
           end
         end
         @(posedge vif.clk);
-        $display("[MD_MON] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d", tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), rx_bytes_count);
+        $display("[%0t] Enviado paquete MD al checker: TX(size=%0d,data=%h) RX(samples=%0d) Bytes count: %0d",$time, tr.data_out[0].ctrl_size, tr.data_out[0].data_out, tr.data_in.size(), rx_bytes_count);
         foreach (tr.data_out[i]) begin
           $display("  [TX%0d] data=%h off=%0d size=%0d", i, tr.data_out[i].data_out, tr.data_out[i].ctrl_offset, tr.data_out[i].ctrl_size);
         end
