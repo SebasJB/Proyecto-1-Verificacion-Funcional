@@ -66,8 +66,8 @@ function bit concat_one_from_pkt32 (
     off_out  = $unsigned(pkt.data_out[0].ctrl_offset);  // en bytes
 
     // Debug: mostrar lo que llegó
-    //$display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
-          // pkt.data_out[0].ctrl_size, pkt.data_out[0].ctrl_offset, pkt.data_out[0].data_out, pkt.data_in.size(), bytes_avail);
+    $display("[CHK] pkt: TX{size=%0d off=%0d data=%h} RX.samples=%0d  stream_bytes=%0d",
+          pkt.data_out[0].ctrl_size, pkt.data_out[0].ctrl_offset, pkt.data_out[0].data_out, pkt.data_in.size(), bytes_avail);
     //$display("[CHK] byte_stream=0x%08h  (bytes: %02x %02x %02x %02x)",
           // byte_stream,
           // byte_stream[7:0], byte_stream[15:8],
@@ -222,7 +222,7 @@ endfunction
     if (exp.ctrl_offset != got_data.ctrl_offset) ok = 0;
 
     if (!ok) begin
-      //$error("[CHK] MISMATCH " | "exp_data=%h got_data=%h | "| "exp_size=%0d got_size=%0d | " | "exp_size=%0d got_size=%0d | " | "exp_off=%0d got_off=%0d", exp.data_out, got_data.data_out, exp.ctrl_size, got_data.ctrl_size, exp.ctrl_offset, got_data.ctrl_offset);
+      $error("[CHK] MISMATCH " | "exp_data=%h got_data=%h | "| "exp_size=%0d got_size=%0d | " | "exp_size=%0d got_size=%0d | " | "exp_off=%0d got_off=%0d", exp.data_out, got_data.data_out, exp.ctrl_size, got_data.ctrl_size, exp.ctrl_offset, got_data.ctrl_offset);
     end
     return ok;
   endfunction
@@ -259,10 +259,10 @@ endfunction
         null_exp = new();
         if (compare_one(null_exp, got_d)) begin
           n_pass++;
-          //$display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
+          $display("[CHK] #%0d OK (sin salida esperada -> nula)", n_checked);
         end else begin
           n_fail++;
-          //$display("[CHK] #%0d FAIL (DUT emitió pero golden no tenía suficiente bytes)", n_checked);
+          $display("[CHK] #%0d FAIL (DUT emitió pero golden no tenía suficiente bytes)", n_checked);
         end
         continue;
       end
@@ -270,16 +270,16 @@ endfunction
       // Para salidas válidas, el golden fija offset_out=0 y size_out=CTRL_SIZE
       if (compare_one(exp, got_d)) begin
         n_pass++;
-       // $display("[CHK] #%0d OK (size=%0d)", n_checked, CTRL_SIZE);
+       $display("[CHK] #%0d OK (size=%0d)", n_checked, CTRL_SIZE);
       end else begin
         n_fail++;
-        //$display("[CHK] #%0d FAIL (size=%0d)", n_checked, CTRL_SIZE);
+        $display("[CHK] #%0d FAIL (size=%0d)", n_checked, CTRL_SIZE);
       end
     end
   endtask
 
   function void report();
-    //$display("[CHK] Resumen: checked=%0d pass=%0d fail=%0d", n_checked, n_pass, n_fail);
+    $display("[CHK] Resumen: checked=%0d pass=%0d fail=%0d", n_checked, n_pass, n_fail);
   endfunction
 
 endclass
