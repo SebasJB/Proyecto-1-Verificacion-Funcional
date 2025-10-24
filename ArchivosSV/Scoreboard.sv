@@ -119,7 +119,11 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   // === Exportar CSV en columnas ===
   // Columnas: RX_data, RX_size, RX_offset, APB_prdata, APB_pslverr, TX_data, TX_size, TX_offset
   // + (opcional) APB_addr, APB_dir, APB_wdata, APB_waitstates
-  task write_csv(string path);
+  task write_csv(string path);\
+    int unsigned n_rx;
+    int unsigned n_apb;
+    int unsigned n_tx;
+
     int fd = $fopen(path, "w");
     if (fd == 0) begin
       $display("[%0t] [SB] ERROR: No se pudo abrir CSV '%s'", $time, path);
@@ -129,9 +133,9 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     // Cabecera
     $fdisplay(fd, "idx,","rx_data,rx_size,rx_offset,", "apb_prdata,apb_pslverr,apb_addr,apb_dir,apb_wdata,apb_waitstates," ,"tx_data,tx_size,tx_offset");
 
-    int unsigned n_rx = rx_data_q.size();
-    int unsigned n_apb = apb_prdata_q.size();
-    int unsigned n_tx = tx_data_q.size();
+    n_rx = rx_data_q.size();
+    n_apb = apb_prdata_q.size();
+    n_tx = tx_data_q.size();
 
     int unsigned n_rows;
     if (n_rx >= n_apb && n_rx >= n_tx)       n_rows = n_rx;
