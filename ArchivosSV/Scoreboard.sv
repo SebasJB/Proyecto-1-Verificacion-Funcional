@@ -119,7 +119,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   // === Exportar CSV en columnas ===
   // Columnas: RX_data, RX_size, RX_offset, APB_prdata, APB_pslverr, TX_data, TX_size, TX_offset
   // + (opcional) APB_addr, APB_dir, APB_wdata, APB_waitstates
-  task write_csv(string path);\
+  task write_csv(string path);
     int unsigned n_rx;
     int unsigned n_apb;
     int unsigned n_tx;
