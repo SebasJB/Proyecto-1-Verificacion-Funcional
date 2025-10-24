@@ -165,7 +165,7 @@ endfunction
     exp_one = new();
     valid = is_align_valid(rx_s.offset, rx_s.size);
     if (!valid) begin
-      $display("'ALINEACIÓN INVÁLIDA")
+      $display("'ALINEACIÓN INVÁLIDA");
     end
     
     if (pkt.data_in[0].size < pkt.data_out[0].ctrl_size) begin
