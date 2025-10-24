@@ -46,7 +46,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   int unsigned apb_waitstates_q[$];
   time apb_t_time_q[$];
 
-
+  /*
   // === Hilo consumidor de MD  ===
   task consume_md_monitor();
     MD_pack2 #(ALGN_DATA_WIDTH) MD_tr;
@@ -114,7 +114,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
       consume_md_generator();
       consume_apb_generator();
     join_none
-  endtask
+  endtask*/
 
   // === Exportar CSV en columnas ===
   // Columnas: RX_data, RX_size, RX_offset, APB_prdata, APB_pslverr, TX_data, TX_size, TX_offset
@@ -124,6 +124,9 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     int unsigned n_apb;
     int unsigned n_tx;
     int unsigned n_rows;
+    string s_rx_data, s_rx_size, s_rx_off;
+    string s_apb_prd, s_apb_err, s_apb_addr, s_apb_dir, s_apb_wdat, s_apb_ws;
+    string s_tx_data, s_tx_size, s_tx_off;
 
     int fd = $fopen(path, "w");
     if (fd == 0) begin
@@ -144,9 +147,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     else                                     n_rows = n_tx;
 
     // Helper para strings vacíos en campos faltantes
-    string s_rx_data, s_rx_size, s_rx_off;
-    string s_apb_prd, s_apb_err, s_apb_addr, s_apb_dir, s_apb_wdat, s_apb_ws;
-    string s_tx_data, s_tx_size, s_tx_off;
+    
 
     for (int i = 0; i < n_rows; i++) begin
       // RX
@@ -190,11 +191,8 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
 
     $fclose(fd);
     $display("[%0t] [SB] CSV escrito en '%s' (filas=%0d)", $time, path, n_rows);
-    class Scoreboard #(int W = 32);
 
-  // ... (tu plumbing existente)
-
-  // ===== CSV =====
+    // ===== CSV =====
   int csv_fd;
   bit csv_header_written = 0;
 
@@ -268,6 +266,11 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
       // ... resto del procesamiento/scoreboard ...
     end
   endtask
+    class Scoreboard #(int W = 32);
+
+  // ... (tu plumbing existente)
+
+  
 
 endclass
 
