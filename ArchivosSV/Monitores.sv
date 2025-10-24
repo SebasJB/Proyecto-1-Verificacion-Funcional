@@ -177,7 +177,6 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
     MD_pack2 #(ALGN_DATA_WIDTH) tr;
     int unsigned bytes;
     int unsigned i;
-    bit valid_align;
     forever begin
       tr = new();
       $display("[MON] Datos en el buffer de entrada: %0d", data_in_buffer.size());
@@ -186,7 +185,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       if (data_out_buffer.size() == 0 ) @ev_tx_pushed;
       tx_sample = data_out_buffer.pop_front();
       if (data_in_buffer.size() != 0) rx_sample = data_in_buffer.pop_front();
-
+      
       foreach (data_in_buffer[i]) begin
               $display("  [RX%0d] data=%h off=%0d size=%0d", i, data_in_buffer[i].data_in, data_in_buffer[i].offset, data_in_buffer[i].size);
             end
@@ -195,11 +194,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       if (rx_sample.size > tx_sample.ctrl_size) begin
         tx_bytes_count = 0;
         if (rx_sample.err) begin
-          tr.data_err[0] = rx_sample;
-          $display("[MON] RX inválida descartada: data=%h off=%0d size=%0d",rx_sample.data_in, rx_sample.offset, rx_sample.size);
-          send_transaction(tr);
-          // Toma otra TX/RX en la siguiente iteración
-          continue;
+            tr.data_err[0] = rx_sample;
+            rx_sample = data_in_buffer.pop_front();
           end
         else begin
             tr.data_in[0] = rx_sample;
