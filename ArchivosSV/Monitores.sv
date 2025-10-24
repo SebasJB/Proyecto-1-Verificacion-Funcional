@@ -194,6 +194,7 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
         tx_bytes_count = 0;
         if (rx_sample.err) begin
             tr.data_err[0] = rx_sample;
+            if (data_in_buffer.size() != 0) rx_sample = data_in_buffer.pop_front;
           end
         else begin
             tr.data_in[0] = rx_sample;
