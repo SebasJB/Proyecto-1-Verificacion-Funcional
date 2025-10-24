@@ -47,7 +47,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
   int unsigned apb_waitstates_q[$];
   time apb_t_time_q[$];
 
-  /*
+  
   // === Hilo consumidor de MD  ===
   task consume_md_monitor();
     MD_pack2 #(ALGN_DATA_WIDTH) MD_tr;
@@ -196,6 +196,7 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     // ===== CSV =====
   endtask
 
+/*
   function void csv_open(string path = "md_trace.csv");
   int csv_fd;
   bit csv_header_written = 0;
@@ -272,9 +273,6 @@ class Scoreboard #(int ALGN_DATA_WIDTH = 32);
     class Scoreboard #(int W = 32);
 
   // ... (tu plumbing existente)
-
-  
-
-endclass
+  endclass*/
 
 endclass
