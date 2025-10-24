@@ -61,7 +61,7 @@ class test #(parameter int ALGN_DATA_WIDTH = 32);
     // A los 10000 ciclos, pedir REPORTE COMPLETO al scoreboard
     # 100000;
     $display("[%0t] [TEST] Solicitando REPORTE COMPLETO al Scoreboard", $time);
-    env.Scoreboard.write_csv("Reporte de datos.csv");
+    env.Scoreboard_ins.write_csv("Reporte de datos.csv");
     # 100;
     $finish;
   endtask
