@@ -1,0 +1,137 @@
+0 
+42
++itf+/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/vcsdp_lite.tab
++lint=TFIPC-L
++vcsd1
++vpi
+-Mamsrun=
+-Masflags=
+-Mcc=gcc
+-Mcfl= -pipe -fPIC -O -I/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/include
+-Mcplusplus=g++
+-Mcrt0=
+-Mcrtn=
+-Mcsrc=
+-Mexternalobj=
+-Mldflags= -rdynamic
+-Mobjects= /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/libvirsim.so /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/liberrorinf.so /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/libsnpsmalloc.so /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/libvfs.so
+-Mout=salida
+-Msaverestoreobj=/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/vcs_save_restore_new.o
+-Msyslibs=/mnt/vol_NFS_rh003/tools/verdi/R-2020.12-SP2/share/PLI/VCS/LINUX64/pli.a -ldl
+-Mupdate
+-Mvcsaceobjs=
+-Mxcflags= -pipe -fPIC -I/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/include
+-Mxllcflags=
+-P
+-Xufe=2steps
+-cm
+-debug_acc+all
+-debug_region+cell+encrypt
+-fsdb
+-full64
+-gen_obj
+-kdb
+-l
+-lca
+-o salida
+-picarchive
+-sverilog
+/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/bin/vcs1
+log_test
+salida
+line+tgl+cond+fsm+branch+assert
+/mnt/vol_NFS_rh003/tools/verdi/R-2020.12-SP2/share/PLI/VCS/LINUX64/verdi.tab
+testbench.sv
+61
+which_declare=declare -f
+XMODIFIERS=@im=ibus
+XDG_SESSION_ID=50
+XDG_RUNTIME_DIR=/run/user/1410
+XDG_MENU_PREFIX=gnome-
+XDG_DATA_DIRS=/home/BarrantesPerez_Veri_II_25/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop
+XDG_CURRENT_DESKTOP=GNOME
+VTE_VERSION=5204
+VNCDESKTOP=redhat003:1 (BarrantesPerez_Veri_II_25)
+VMR_MODE_FLAG=64
+VERDI_HOME=/mnt/vol_NFS_rh003/tools/verdi/R-2020.12-SP2
+VCS_PATHMAP_PRELOAD_DONE=1
+VCS_MX_HOME_INTERNAL=1
+VCS_MODE_FLAG=64
+VCS_LOG_FILE=log_test
+VCS_LCAMSG_PRINT_OFF=1
+VCS_HOME=/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2
+VCS_EXEC_DONE=1
+VCS_DEPTH=0
+VCS_ARG_ADDED_FOR_TMP=1
+VCS_ARCH=linux64
+UVM_HOME=/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/etc/uvm-1.2
+UNAME=/bin/uname
+TOOL_HOME=/mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64
+SYNOPSYS_HOME=/mnt/vol_NFS_rh003/tools
+SSH_TTY=/dev/pts/3
+SSH_CONNECTION=172.21.7.108 49780 172.21.8.7 22
+SSH_CLIENT=172.21.7.108 49780 22
+SSH_AUTH_SOCK=/run/user/1410/keyring/ssh
+SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
+SSH_AGENT_PID=297701
+SNPS_VERDI_INTERNAL_LP_XML_NEW_FLOW=1
+SNPS_SIM_DEFAULT_GUI=verdi
+SNPSLMD_QUEUE=TRUE
+SESSION_MANAGER=local/unix:@/tmp/.ICE-unix/297631,unix/unix:/tmp/.ICE-unix/297631
+SCRNAME=vcs
+SCRIPT_NAME=vcs
+QT_IM_MODULE=ibus
+OVA_UUM=0
+MODULES_RUN_QUARANTINE=LD_LIBRARY_PATH LD_PRELOAD
+MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl
+MODULESHOME=/usr/share/Modules
+MODULEPATH_modshare=/usr/share/Modules/modulefiles:2:/etc/modulefiles:2:/usr/share/modulefiles:2
+MODULEPATH=/etc/scl/modulefiles:/etc/scl/modulefiles:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+LOADEDMODULES=
+LESSOPEN=||/usr/bin/lesspipe.sh %s
+LC_ALL=C
+HISTCONTROL=ignoredups
+GNOME_TERMINAL_SERVICE=:1.76
+GNOME_TERMINAL_SCREEN=/org/gnome/Terminal/screen/97749925_d1ad_44dd_a617_29571e9cca77
+GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+GJS_DEBUG_TOPICS=JS ERROR;JS LOG
+GJS_DEBUG_OUTPUT=stderr
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-rumr8N5g7X,guid=488c8e170632ba7d57eb067e68f799d4
+COLORTERM=truecolor
+BASH_FUNC_which%%=() {  ( alias;_ eval ${which_declare} ) | /usr/bin/which --tty-only --read-alias --read-functions --show-tilde --show-dot $@_}
+BASH_FUNC_switchml%%=() {  typeset swfound=1;_ if [ "${MODULES_USE_COMPAT_VERSION:-0}" = '1' ]; then_ typeset swname='main';_ if [ -e /usr/share/Modules/libexec/modulecmd.tcl ]; then_ typeset swfound=0;_ unset MODULES_USE_COMPAT_VERSION;_ fi;_ else_ typeset swname='compatibility';_ if [ -e /usr/share/Modules/libexec/modulecmd-compat ]; then_ typeset swfound=0;_ MODULES_USE_COMPAT_VERSION=1;_ export MODULES_USE_COMPAT_VERSION;_ fi;_ fi;_ if [ $swfound -eq 0 ]; then_ echo "Switching to Modules $swname version";_ source /usr/share/Modules/init/bash;_ else_ echo "Cannot switch to Modules $swname version, command not found";_ return 1;_ fi_}
+BASH_FUNC_scl%%=() {  if [ "$1" = "load" -o "$1" = "unload" ]; then_ eval "module $@";_ else_ /usr/bin/scl "$@";_ fi_}
+BASH_FUNC_module%%=() {  _module_raw "$@" 2>&1_}
+BASH_FUNC_ml%%=() {  module ml "$@"_}
+BASH_FUNC__module_raw%%=() {  unset _mlshdbg;_ if [ "${MODULES_SILENT_SHELL_DEBUG:-0}" = '1' ]; then_ case "$-" in _ *v*x*)_ set +vx;_ _mlshdbg='vx'_ ;;_ *v*)_ set +v;_ _mlshdbg='v'_ ;;_ *x*)_ set +x;_ _mlshdbg='x'_ ;;_ *)_ _mlshdbg=''_ ;;_ esac;_ fi;_ unset _mlre _mlIFS;_ if [ -n "${IFS+x}" ]; then_ _mlIFS=$IFS;_ fi;_ IFS=' ';_ for _mlv in ${MODULES_RUN_QUARANTINE:-};_ do_ if [ "${_mlv}" = "${_mlv##*[!A-Za-z0-9_]}" -a "${_mlv}" = "${_mlv#[0-9]}" ]; then_ if [ -n "`eval 'echo ${'$_mlv'+x}'`" ]; then_ _mlre="${_mlre:-}${_mlv}_modquar='`eval 'echo ${'$_mlv'}'`' ";_ fi;_ _mlrv="MODULES_RUNENV_${_mlv}";_ _mlre="${_mlre:-}${_mlv}='`eval 'echo ${'$_mlrv':-}'`' ";_ fi;_ done;_ if [ -n "${_mlre:-}" ]; then_ eval `eval ${_mlre} /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'`;_ else_ eval `/usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash "$@"`;_ fi;_ _mlstatus=$?;_ if [ -n "${_mlIFS+x}" ]; then_ IFS=$_mlIFS;_ else_ unset IFS;_ fi;_ unset _mlre _mlv _mlrv _mlIFS;_ if [ -n "${_mlshdbg:-}" ]; then_ set -$_mlshdbg;_ fi;_ unset _mlshdbg;_ return $_mlstatus_}
+0
+22
+1761283272 test.sv
+1761281832 environment.sv
+1761283394 Checker.sv
+1761283166 Scoreboard.sv
+1761281832 Monitores.sv
+1761281832 drivers.sv
+1761281832 generador.sv
+1761282570 trans_items.sv
+1761281832 cfs_aligner.v
+1761281832 cfs_aligner_core.v
+1761281832 cfs_regs.v
+1761281832 cfs_edge_detect.v
+1761281832 cfs_tx_ctrl.v
+1761281832 cfs_ctrl.v
+1761281832 cfs_rx_ctrl.v
+1761281832 cfs_synch_fifo.v
+1761281832 cfs_synch.v
+1761281832 design.v
+1761281832 testbench.sv
+1631316078 /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/include/cm_vcsd.tab
+1631317894 /mnt/vol_NFS_rh003/tools/verdi/R-2020.12-SP2/share/PLI/VCS/LINUX64/verdi.tab
+1631316234 /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/vcsdp_lite.tab
+4
+1631316244 /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/libvirsim.so
+1631316244 /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/liberrorinf.so
+1631316235 /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/libsnpsmalloc.so
+1631316245 /mnt/vol_NFS_rh003/tools/vcs/R-2020.12-SP2/linux64/lib/libvfs.so
+1761283404 salida.daidir
+-1 partitionlib
