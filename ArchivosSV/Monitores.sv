@@ -188,8 +188,8 @@ class MD_Monitor #(int ALGN_DATA_WIDTH = 32);
       foreach (data_in_buffer[i]) begin
               $display("  [RX%0d] data=%h off=%0d size=%0d", i, data_in_buffer[i].data_in, data_in_buffer[i].offset, data_in_buffer[i].size);
             end
-      //$display("[MON] Dato de entrada obtenido: %0h", rx_sample.data_in);
-      //$display("[MON] Dato de salida obtenido : %0h", tx_sample.data_out);
+      $display("[MON] Dato de entrada obtenido: %0h", rx_sample.data_in);
+      $display("[MON] Dato de salida obtenido : %0h", tx_sample.data_out);
       if (rx_sample.size > tx_sample.ctrl_size) begin
         tx_bytes_count = 0;
         if (rx_sample.err) begin
